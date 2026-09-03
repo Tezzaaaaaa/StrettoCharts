@@ -1,8 +1,10 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, rename } from 'node:fs/promises';
 
 const ROOT = new URL('..', import.meta.url);
 const DATA_DIR = new URL('./data/', ROOT);
-const OUTPUT = new URL('./data/latest.json', ROOT);
+const LATEST = new URL('./data/latest.json', ROOT);
+const HISTORY_DIR = new URL('./data/history/', ROOT);
+const HISTORY_INDEX = new URL('./data/history/index.json', ROOT);
 
 const SOURCES = [
   { id: 'spotify-global-daily', name: 'Spotify Global Daily', type: 'daily', url: 'https://charts.spotify.com/charts/view/regional-global-daily/latest/download', parser: parseSpotifyCsv },
@@ -13,71 +15,60 @@ const SOURCES = [
 ];
 
 function clean(value) { return String(value ?? '').replace(/\s+/g, ' ').trim(); }
-
+function key(title, artists = []) { return `${clean(title).toLowerCase()}::${artists.map(clean).join('|').toLowerCase()}`; }
 function csvRows(text) {
   const rows = []; let row = [], field = '', quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
+  for (let i = 0; i < text.length; i++) { const c = text[i];
     if (c === '"') { if (quoted && text[i + 1] === '"') { field += '"'; i++; } else quoted = !quoted; }
     else if (c === ',' && !quoted) { row.push(field); field = ''; }
     else if ((c === '\n' || c === '\r') && !quoted) { if (c === '\r' && text[i + 1] === '\n') i++; row.push(field); field = ''; if (row.some(v => clean(v))) rows.push(row); row = []; }
     else field += c;
   }
-  if (field || row.length) { row.push(field); rows.push(row); }
-  return rows;
+  if (field || row.length) { row.push(field); rows.push(row); } return rows;
 }
-
 function parseSpotifyCsv(text) {
   const rows = csvRows(text); if (rows.length < 2) throw new Error('Spotify CSV contained no rows');
-  const headers = rows[0].map(clean); const index = name => headers.findIndex(h => h.toLowerCase() === name);
-  const rank = index('rank'), title = index('track_name'), artist = index('artist_names'), streams = index('streams'), date = index('date'), region = index('region');
+  const headers = rows[0].map(clean); const index = n => headers.findIndex(h => h.toLowerCase() === n);
+  const rank=index('rank'), title=index('track_name'), artist=index('artist_names'), streams=index('streams'), date=index('date'), region=index('region');
   if (rank < 0 || title < 0 || artist < 0) throw new Error('Unexpected Spotify CSV schema');
-  return rows.slice(1).map(r => ({ rank: Number(r[rank]), title: clean(r[title]), artists: clean(r[artist]).split(',').map(clean).filter(Boolean), streams: streams >= 0 ? Number(r[streams]) || null : null, chartDate: date >= 0 ? clean(r[date]) : null, region: region >= 0 ? clean(r[region]) : 'Global' })).filter(x => Number.isFinite(x.rank) && x.title);
+  return rows.slice(1).map(r => ({ rank:Number(r[rank]), title:clean(r[title]), artists:clean(r[artist]).split(',').map(clean).filter(Boolean), streams:streams>=0 ? Number(r[streams])||null : null, chartDate:date>=0 ? clean(r[date]) : null, region:region>=0 ? clean(r[region]) : 'Global' })).filter(x => Number.isFinite(x.rank) && x.title);
 }
-
 function parseAppleRss(text) {
   const json = JSON.parse(text); const results = Array.isArray(json.feed?.results) ? json.feed.results : [];
-  return results.map((item, i) => ({ rank: i + 1, title: clean(item.name), artists: [clean(item.artistName)].filter(Boolean), album: clean(item.collectionName) || null, url: item.url || null, artworkUrl: item.artworkUrl100 || null, chartDate: json.feed?.updated || null })).filter(x => x.title);
+  return results.map((item,i) => ({ rank:i+1, title:clean(item.name), artists:[clean(item.artistName)].filter(Boolean), album:clean(item.collectionName)||null, url:item.url||null, artworkUrl:item.artworkUrl100||null, chartDate:json.feed?.updated||null })).filter(x=>x.title);
 }
-
 function parseAriaHtml(text) {
-  const normalized = text.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ');
-  const stripped = normalized.replace(/<[^>]+>/g, '\n').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
-  const lines = stripped.split(/\n+/).map(clean).filter(Boolean); const out = [];
-  for (let i = 0; i < lines.length && out.length < 50; i++) {
-    if (!/^\d+$/.test(lines[i])) continue; const rank = Number(lines[i]); if (rank < 1 || rank > 50) continue;
-    const title = lines[i + 1], artist = lines[i + 2]; if (!title || !artist || /^\d+$/.test(title)) continue;
-    const next = lines.slice(i + 3, i + 9);
-    out.push({ rank, title, artists: artist.split(',').map(clean).filter(Boolean), lastWeek: next.find(v => /last week/i.test(v)) || null, peak: next.find(v => /peak/i.test(v)) || null, weeksInChart: next.find(v => /weeks in/i.test(v)) || null });
-  }
+  const normalized=text.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ');
+  const stripped=normalized.replace(/<[^>]+>/g,'\n').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"');
+  const lines=stripped.split(/\n+/).map(clean).filter(Boolean), out=[];
+  for(let i=0;i<lines.length&&out.length<50;i++){ if(!/^\d+$/.test(lines[i]))continue; const rank=Number(lines[i]); if(rank<1||rank>50)continue; const title=lines[i+1],artist=lines[i+2]; if(!title||!artist||/^\d+$/.test(title))continue; const next=lines.slice(i+3,i+9); out.push({rank,title,artists:artist.split(',').map(clean).filter(Boolean),lastWeek:next.find(v=>/last week/i.test(v))||null,peak:next.find(v=>/peak/i.test(v))||null,weeksInChart:next.find(v=>/weeks in/i.test(v))||null}); }
   return dedupeByRank(out);
 }
-
 function parseBillboardHtml(text) {
-  const out = [];
-  const patterns = [
-    /c-title[^>]*>([\s\S]*?)<\/h3>[\s\S]*?c-label[^>]*>([\s\S]*?)<\/span>/gi,
-    /o-chart-results-list__item-title[^>]*>([\s\S]*?)<\/h3>[\s\S]*?o-chart-results-list__item-excerpt[^>]*>([\s\S]*?)<\/span>/gi,
-  ];
-  for (const re of patterns) { let m; while ((m = re.exec(text)) && out.length < 100) { const title = clean(m[1].replace(/<[^>]+>/g, '')), artist = clean(m[2].replace(/<[^>]+>/g, '')); if (title && artist) out.push({ rank: out.length + 1, title, artists: [artist] }); } if (out.length) break; }
-  if (!out.length) throw new Error('Billboard markup did not expose chart rows'); return out;
+  const out=[]; const patterns=[/c-title[^>]*>([\s\S]*?)<\/h3>[\s\S]*?c-label[^>]*>([\s\S]*?)<\/span>/gi,/o-chart-results-list__item-title[^>]*>([\s\S]*?)<\/h3>[\s\S]*?o-chart-results-list__item-excerpt[^>]*>([\s\S]*?)<\/span>/gi];
+  for(const re of patterns){let m;while((m=re.exec(text))&&out.length<100){const title=clean(m[1].replace(/<[^>]+>/g,'')),artist=clean(m[2].replace(/<[^>]+>/g,''));if(title&&artist)out.push({rank:out.length+1,title,artists:[artist]});}if(out.length)break;} if(!out.length)throw new Error('Billboard markup did not expose chart rows');return out;
 }
+function dedupeByRank(rows){return [...new Map(rows.map(row=>[row.rank,row])).values()].sort((a,b)=>a.rank-b.rank);}
+async function fetchSource(source){const response=await fetch(source.url,{headers:{'user-agent':'StrettoCharts/1.0 (+https://github.com/Tezzaaaaaa/StrettoCharts)',accept:'text/html,application/json,text/csv;q=0.9,*/*;q=0.8'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);const entries=source.parser(await response.text());if(!entries.length)throw new Error('No chart entries parsed');return entries;}
 
-function dedupeByRank(rows) { return [...new Map(rows.map(row => [row.rank, row])).values()].sort((a, b) => a.rank - b.rank); }
-
-async function fetchSource(source) {
-  const response = await fetch(source.url, { headers: { 'user-agent': 'StrettoCharts/1.0 (+https://github.com/Tezzaaaaaa/StrettoCharts)', accept: 'text/html,application/json,text/csv;q=0.9,*/*;q=0.8' } });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`); const text = await response.text(); const entries = source.parser(text); if (!entries.length) throw new Error('No chart entries parsed'); return entries;
+function addMovement(current, previous){
+  const previousByKey=new Map((previous?.entries||[]).map(e=>[key(e.title,e.artists),e]));
+  return current.map(e=>{const old=previousByKey.get(key(e.title,e.artists));const movement=old?old.rank-e.rank:null;return {...e,previousRank:old?.rank??null,movement,movementLabel:movement===null?'new':movement>0?`up ${movement}`:movement<0?`down ${Math.abs(movement)}`:'same',peakRank:Math.min(e.rank,old?.peakRank??e.rank),weeksOnChart:(old?.weeksOnChart||0)+1};});
 }
-
-async function main() {
-  await mkdir(DATA_DIR, { recursive: true }); const updatedAt = new Date().toISOString();
-  const results = await Promise.all(SOURCES.map(async source => {
-    try { const entries = await fetchSource(source); return { id: source.id, name: source.name, type: source.type, sourceUrl: source.url, status: 'ok', fetchedAt: updatedAt, count: entries.length, entries }; }
-    catch (error) { return { id: source.id, name: source.name, type: source.type, sourceUrl: source.url, status: 'error', fetchedAt: updatedAt, count: 0, error: error instanceof Error ? error.message : String(error), entries: [] }; }
-  }));
-  const payload = { schemaVersion: 1, generatedAt: updatedAt, sources: results }; await writeFile(OUTPUT, JSON.stringify(payload, null, 2) + '\n', 'utf8');
-  const ok = results.filter(x => x.status === 'ok'); console.log(`StrettoCharts updated: ${ok.length}/${results.length} sources succeeded`); for (const result of results) console.log(`${result.status.toUpperCase()} ${result.id}: ${result.count}`); if (!ok.length) process.exitCode = 1;
+function calculateArtistRankings(sources){
+  const map=new Map();
+  for(const source of sources){for(const entry of source.entries||[]){for(const artist of entry.artists||[]){const name=clean(artist);if(!name)continue;const id=name.toLowerCase();const row=map.get(id)||{artist:name,appearances:0,totalPoints:0,bestRank:null,charts:0};row.appearances++;row.totalPoints+=Math.max(0,101-entry.rank);row.bestRank=row.bestRank===null?entry.rank:Math.min(row.bestRank,entry.rank);row.charts++;map.set(id,row);}}}
+  return [...map.values()].sort((a,b)=>b.totalPoints-a.totalPoints||b.appearances-a.appearances||a.bestRank-b.bestRank).map((x,i)=>({...x,rank:i+1}));
 }
+async function readJson(url){try{return JSON.parse(await (await fetch(`file://${url.pathname}`).catch(()=>null))?.text());}catch{return null;}}
 
-main().catch(error => { console.error(error); process.exitCode = 1; });
+async function main(){
+  await mkdir(DATA_DIR,{recursive:true}); await mkdir(HISTORY_DIR,{recursive:true}); const now=new Date(); const updatedAt=now.toISOString();
+  let previous=null; try{const {readFile}=await import('node:fs/promises');previous=JSON.parse(await readFile(LATEST,'utf8'));}catch{}
+  const results=await Promise.all(SOURCES.map(async source=>{try{const raw=await fetchSource(source);const old=previous?.sources?.find(s=>s.id===source.id);const entries=addMovement(raw,old);return{id:source.id,name:source.name,type:source.type,sourceUrl:source.url,status:'ok',fetchedAt:updatedAt,count:entries.length,entries};}catch(error){return{id:source.id,name:source.name,type:source.type,sourceUrl:source.url,status:'error',fetchedAt:updatedAt,count:0,error:error instanceof Error?error.message:String(error),entries:[]};}}));
+  const ok=results.filter(x=>x.status==='ok'); const artistRankings=calculateArtistRankings(ok); const payload={schemaVersion:2,generatedAt:updatedAt,sources:results,artistRankings};
+  await writeFile(LATEST,JSON.stringify(payload,null,2)+'\n','utf8');
+  if(ok.length){const date=updatedAt.slice(0,10);await writeFile(new URL(`./${date}.json`,HISTORY_DIR),JSON.stringify(payload,null,2)+'\n','utf8');let index=[];try{const {readFile}=await import('node:fs/promises');index=JSON.parse(await readFile(HISTORY_INDEX,'utf8'));}catch{}if(!index.some(x=>x.date===date))index.push({date,file:`${date}.json`,generatedAt:updatedAt,sources:ok.map(x=>x.id)});index.sort((a,b)=>b.date.localeCompare(a.date));await writeFile(HISTORY_INDEX,JSON.stringify(index,null,2)+'\n','utf8');}
+  console.log(`StrettoCharts updated: ${ok.length}/${results.length} sources succeeded; ${artistRankings.length} artists ranked`);for(const r of results)console.log(`${r.status.toUpperCase()} ${r.id}: ${r.count}`);if(!ok.length)process.exitCode=1;
+}
+main().catch(error=>{console.error(error);process.exitCode=1;});
