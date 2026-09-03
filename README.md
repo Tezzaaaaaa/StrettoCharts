@@ -1,10 +1,8 @@
 # StrettoCharts
 
-Automated music-chart data updater and historical dataset.
+Automated music-chart updater, historical archive and cross-chart ranking engine.
 
-## Sources
-
-The updater currently collects:
+## Current charts
 
 - Spotify Global Daily
 - Apple Music Global Top 100
@@ -12,30 +10,45 @@ The updater currently collects:
 - ARIA Top 50 Singles
 - Billboard Hot 100
 
-Each source is isolated. A source failure does not destroy successful updates from the other sources, and failed sources are recorded explicitly in `data/latest.json`.
+Spotify describes its charts as daily listener-driven streaming charts, while Apple Music's Global Top 100 is explicitly updated every day. citeturn0news0turn0search3
 
-## Run locally
+## What StrettoCharts tracks
 
-Requires Node.js 22 or newer.
+Every successful update produces normalized chart entries with:
+
+- current rank
+- previous rank
+- movement (`up`, `down`, `same`, or `new`)
+- peak rank
+- weeks on chart
+- title and artists
+- streams where supplied by the source
+- album/artwork/link metadata where supplied
+
+The updater also builds a cross-source **Artist Rankings** table using rank-weighted points and appearance counts.
+
+## Historical archive
+
+Daily snapshots are stored under `data/history/` and indexed by `data/history/index.json`. `data/latest.json` is always the most recent successful/partial update.
+
+This makes it possible to calculate long-term chart history instead of relying on today's page alone.
+
+## Automation
+
+GitHub Actions runs hourly and can also be started manually. It commits `data/latest.json` and any new/changed history files only when the data changes.
+
+## Local use
+
+Requires Node.js 22+.
 
 ```bash
 npm run update
 ```
 
-The normalized output is written to `data/latest.json`.
+## Reliability rules
 
-## Automation
-
-GitHub Actions runs the updater hourly and can also be started manually. Only changed chart data is committed.
-
-## Data model
-
-Every chart contains a source id, source URL, fetch timestamp, status, and normalized entries. Entries use a common shape where possible:
-
-- `rank`
-- `title`
-- `artists`
-- `streams` when the source supplies it
-- source-specific chart metadata where available
-
-The updater deliberately does not invent missing values.
+- Each chart source fails independently.
+- A failed source is recorded rather than silently omitted.
+- Missing values are represented as `null`; the updater does not fabricate chart statistics.
+- Chart movement is matched by normalized title + artist combination.
+- Historical files are date-stamped so the dataset can be consumed by a future dashboard/API.
