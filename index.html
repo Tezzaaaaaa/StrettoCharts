@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>StrettoCharts — Chart Tracker</title>
 <style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f5f5f7}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1280px;margin:auto;padding:32px 20px 64px}.top{margin-bottom:24px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:700;color:#666}.h1{font-size:clamp(40px,7vw,72px);line-height:.95;margin:8px 0}.sub{color:#666;max-width:760px;font-size:16px}.search{position:relative;margin:28px 0 18px}.search input{width:100%;height:64px;border:1px solid #ccc;border-radius:18px;background:#fff;padding:0 22px;font-size:20px;outline:none;box-shadow:0 2px 8px #00000008}.search input:focus{border-color:#111;box-shadow:0 0 0 3px #0000000d}.search small{display:block;color:#777;margin:8px 4px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}.card{background:#fff;border:1px solid #ddd;border-radius:18px;padding:18px}.num{font-size:32px;font-weight:750}.label{font-size:13px;color:#666;margin-top:4px}.section{margin-top:34px}.section h2{margin-bottom:12px}.result-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:12px}.result-head h2{margin:0}.muted{color:#777}.results{display:grid;gap:12px}.artist-card{background:#fff;border:1px solid #ddd;border-radius:18px;padding:20px}.artist-name{font-size:25px;font-weight:750}.artist-meta{color:#666;margin-top:4px}.chart-list{margin-top:16px;border-top:1px solid #eee}.chart-row{display:grid;grid-template-columns:1fr 100px 110px 100px;gap:12px;padding:13px 0;border-bottom:1px solid #eee;align-items:center}.chart-row:last-child{border-bottom:0}.song b{display:block}.song span{color:#777;font-size:13px}.source{font-size:13px}.rank{font-weight:750}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;font-size:12px;white-space:nowrap}.up{background:#e7f7ed}.down{background:#fdeaea}.new{background:#e8f0ff}.empty{padding:40px;text-align:center;color:#666;background:#fff;border:1px solid #ddd;border-radius:18px}.sources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.source-card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:14px}.source-card b{display:block}.status{font-size:12px;color:#777;margin-top:5px}.table{background:#fff;border:1px solid #ddd;border-radius:18px;overflow:hidden}.table-row{display:grid;grid-template-columns:64px minmax(180px,1fr) 180px 110px 90px;gap:12px;padding:13px 16px;border-bottom:1px solid #eee;align-items:center}.table-row:last-child{border-bottom:0}.head{font-size:12px;font-weight:700;color:#666;background:#fafafa}.footer{margin-top:34px;color:#777;font-size:12px}@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.sources{grid-template-columns:1fr}.chart-row{grid-template-columns:1fr 70px 85px}.chart-row>:nth-child(3){display:none}.table-row{grid-template-columns:44px 1fr 80px}.table-row>:nth-child(3),.table-row>:nth-child(5){display:none}}
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f5f5f7}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1280px;margin:auto;padding:32px 20px 64px}.top{margin-bottom:24px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:700;color:#666}.h1{font-size:clamp(40px,7vw,72px);line-height:.95;margin:8px 0}.sub{color:#666;max-width:800px;font-size:16px}.search{margin:28px 0 10px}.search input{width:100%;height:64px;border:1px solid #ccc;border-radius:18px;background:#fff;padding:0 22px;font-size:20px;outline:none;box-shadow:0 2px 8px #00000008}.search input:focus{border-color:#111;box-shadow:0 0 0 3px #0000000d}.examples{display:block;color:#777;margin:8px 4px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}.card,.song-card,.source-card,.empty{background:#fff;border:1px solid #ddd;border-radius:18px}.card{padding:18px}.num{font-size:32px;font-weight:750}.label{font-size:13px;color:#666;margin-top:4px}.section{margin-top:34px}.result-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:12px}.result-head h2{margin:0}.muted{color:#777}.results{display:grid;gap:14px}.artist-header{background:#111;color:#fff;border-radius:20px;padding:22px;margin-bottom:14px}.artist-header h2{margin:0;font-size:30px}.artist-header p{margin:5px 0 0;color:#bbb}.song-card{padding:20px}.song-title{font-size:23px;font-weight:750}.song-artists{color:#666;margin-top:3px}.chart-list{margin-top:16px;border-top:1px solid #eee}.chart-row{display:grid;grid-template-columns:minmax(250px,1fr) 190px 90px 110px;gap:12px;padding:13px 0;border-bottom:1px solid #eee;align-items:center}.chart-row:last-child{border-bottom:0}.source{font-size:13px}.rank{font-weight:750}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;font-size:12px;white-space:nowrap}.up{background:#e7f7ed}.down{background:#fdeaea}.new{background:#e8f0ff}.empty{padding:40px;text-align:center;color:#666}.sources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.source-card{padding:14px}.source-card b{display:block}.status{font-size:12px;color:#777;margin-top:5px}.footer{margin-top:34px;color:#777;font-size:12px}@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.chart-row{grid-template-columns:1fr 75px 85px}.chart-row>:nth-child(2){display:none}.sources{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -13,8 +13,8 @@
 <header class="top">
 <div class="eyebrow">Live music-chart tracker</div>
 <div class="h1">StrettoCharts</div>
-<p class="sub">Search an artist, celebrity, song, or track and see every matching chart position across the sources StrettoCharts tracks.</p>
-<div class="search"><input id="search" type="search" autocomplete="off" placeholder="Search an artist, celebrity or song…"><small>Examples: Taylor Swift, Lady Gaga, The Weeknd, Espresso</small></div>
+<p class="sub">Search an artist, celebrity, song, or track. For an artist, StrettoCharts groups their music together and shows <strong>every chart position</strong> that each song currently holds.</p>
+<div class="search"><input id="search" type="search" autocomplete="off" placeholder="Search an artist, celebrity or song…"><small class="examples">Try Taylor Swift, Lady Gaga, The Weeknd, Espresso</small></div>
 <div id="updated" class="muted">Loading live chart data…</div>
 </header>
 
@@ -27,54 +27,69 @@
 
 <section class="section">
 <div class="result-head"><h2 id="resultTitle">Search results</h2><div id="resultCount" class="muted"></div></div>
-<div id="results"><div class="empty">Type an artist, celebrity or song above.</div></div>
+<div id="results"><div class="empty">Search for an artist or song to see chart positions.</div></div>
 </section>
 
 <section class="section">
 <h2>Current chart coverage</h2>
 <div id="coverage" class="sources"></div>
 </section>
-
-<div class="footer">Data is generated by the StrettoCharts automated updater and refreshed on the dashboard automatically.</div>
+<div class="footer">Data is generated by the StrettoCharts automated updater and refreshed automatically.</div>
 </main>
 <script>
-const coverage=['Spotify Global Daily','Spotify Global Viral 50','Apple Music Global Top 100','Apple Music Australia Top 100','YouTube Global Top Songs Daily','YouTube Global Top Songs Weekly','YouTube Global Top Artists Weekly','Deezer Global Top Tracks','Shazam US Top 200','ARIA Top 50 Singles (Australia)','Official UK Singles Top 100','Billboard Hot 100','Billboard Global 200'];
 const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\':'&#92;'}[c]));
 let dataset=null;
 function norm(s){return String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function allEntries(){return (dataset?.sources||[]).flatMap(source=>(source.entries||[]).map(entry=>({...entry,source:source.name,sourceId:source.id,type:source.type,status:source.status})));}
-function artistMatches(entry,q){const needle=norm(q);return (entry.artists||[]).some(a=>norm(a).includes(needle));}
-function entryMatches(entry,q){const needle=norm(q);return artistMatches(entry,q)||norm(entry.title).includes(needle);}
-function movement(entry){if(entry.movementLabel)return entry.movementLabel;if(entry.movement===null||entry.movement===undefined)return 'new';if(entry.movement>0)return `up ${entry.movement}`;if(entry.movement<0)return `down ${Math.abs(entry.movement)}`;return 'same';}
-function movementClass(entry){const m=entry.movement;return m===null||m===undefined?'new':m>0?'up':m<0?'down':'';}
+function artistMatches(e,q){const n=norm(q);return (e.artists||[]).some(a=>norm(a).includes(n));}
+function songMatches(e,q){return norm(e.title).includes(norm(q));}
+function movement(e){if(e.movementLabel)return e.movementLabel;if(e.movement==null)return 'new';if(e.movement>0)return `up ${e.movement}`;if(e.movement<0)return `down ${Math.abs(e.movement)}`;return 'same';}
+function movementClass(e){if(e.movement==null)return 'new';return e.movement>0?'up':e.movement<0?'down':'';}
+function songKey(e){return norm(e.title)+'::'+norm((e.artists||[]).join('|'));}
+function chartRow(e){return `<div class="chart-row"><div>${esc(e.type==='weekly'?'Weekly chart':'Daily chart')}</div><div class="source">${esc(e.source)}</div><div class="rank">#${esc(e.rank)}</div><div><span class="pill ${movementClass(e)}">${esc(movement(e))}</span></div></div>`;}
 function renderResults(q){
  const box=document.querySelector('#results');
- if(!q.trim()){document.querySelector('#resultTitle').textContent='Search results';document.querySelector('#resultCount').textContent='';box.innerHTML='<div class="empty">Type an artist, celebrity or song above.</div>';return;}
+ q=q.trim();
+ if(!q){document.querySelector('#resultTitle').textContent='Search results';document.querySelector('#resultCount').textContent='';box.innerHTML='<div class="empty">Search for an artist or song to see chart positions.</div>';return;}
  const entries=allEntries();
- const artistResults=new Map();
- entries.filter(e=>artistMatches(e,q)).forEach(e=>{(e.artists||[]).forEach(a=>{if(norm(a).includes(norm(q))){const k=norm(a);if(!artistResults.has(k))artistResults.set(k,{name:a,entries:[]});artistResults.get(k).entries.push(e);}})});
- const songResults=entries.filter(e=>!artistMatches(e,q)&&norm(e.title).includes(norm(q)));
+ const artistEntries=entries.filter(e=>artistMatches(e,q));
+ const songEntries=entries.filter(e=>songMatches(e,q));
+ const exactArtistNames=[...new Map(artistEntries.flatMap(e=>(e.artists||[]).filter(a=>norm(a).includes(norm(q))).map(a=>[norm(a),a])).values()];
  const cards=[];
- [...artistResults.values()].forEach(a=>{a.entries.sort((x,y)=>x.rank-y.rank);cards.push(`<article class="artist-card"><div class="artist-name">${esc(a.name)}</div><div class="artist-meta">${a.entries.length} chart appearance${a.entries.length===1?'':'s'} across ${new Set(a.entries.map(e=>e.source)).size} source${new Set(a.entries.map(e=>e.source)).size===1?'':'s'}</div><div class="chart-list">${a.entries.map(e=>row(e)).join('')}</div></article>`)});
- if(songResults.length){cards.push(`<article class="artist-card"><div class="artist-name">Matching songs</div><div class="artist-meta">${songResults.length} matching chart appearance${songResults.length===1?'':'s'}</div><div class="chart-list">${songResults.sort((a,b)=>a.rank-b.rank).map(e=>row(e)).join('')}</div></article>`)}
+ if(artistEntries.length){
+   const grouped=new Map();
+   artistEntries.forEach(e=>{const k=songKey(e);if(!grouped.has(k))grouped.set(k,{title:e.title,artists:e.artists||[],entries:[]});grouped.get(k).entries.push(e);});
+   const artistLabel=exactArtistNames.length===1?exactArtistNames[0]:q;
+   const groups=[...grouped.values()].sort((a,b)=>Math.min(...a.entries.map(e=>e.rank))-Math.min(...b.entries.map(e=>e.rank)));
+   cards.push(`<div class="artist-header"><h2>${esc(artistLabel)}</h2><p>${groups.length} song${groups.length===1?'':'s'} found · ${artistEntries.length} chart position${artistEntries.length===1?'':'s'} across ${new Set(artistEntries.map(e=>e.source)).size} charts</p></div>`);
+   groups.forEach(g=>{g.entries.sort((a,b)=>a.rank-b.rank||a.source.localeCompare(b.source));cards.push(`<article class="song-card"><div class="song-title">${esc(g.title)}</div><div class="song-artists">${esc(g.artists.join(', '))}</div><div class="chart-list">${g.entries.map(chartRow).join('')}</div></article>`);});
+ }
+ const onlySongEntries=songEntries.filter(e=>!artistEntries.includes(e));
+ if(onlySongEntries.length){
+   const grouped=new Map();onlySongEntries.forEach(e=>{const k=songKey(e);if(!grouped.has(k))grouped.set(k,{title:e.title,artists:e.artists||[],entries:[]});grouped.get(k).entries.push(e);});
+   [...grouped.values()].forEach(g=>{g.entries.sort((a,b)=>a.rank-b.rank||a.source.localeCompare(b.source));cards.push(`<article class="song-card"><div class="song-title">${esc(g.title)}</div><div class="song-artists">${esc(g.artists.join(', '))}</div><div class="chart-list">${g.entries.map(chartRow).join('')}</div></article>`);});
+ }
+ const total=artistEntries.length+onlySongEntries.length;
  document.querySelector('#resultTitle').textContent=`Results for “${q}”`;
- document.querySelector('#resultCount').textContent=`${artistResults.size+songResults.length} result${artistResults.size+songResults.length===1?'':'s'}`;
- box.innerHTML=cards.length?cards.join(''):'<div class="empty">No matching artist, celebrity, or song was found in the current chart dataset.</div>';
+ document.querySelector('#resultCount').textContent=`${total} chart position${total===1?'':'s'}`;
+ box.innerHTML=cards.length?cards.join(''):'<div class="empty">No matching artist or song was found in the current chart dataset.</div>';
 }
-function row(e){return `<div class="chart-row"><div class="song"><b>${esc(e.title)}</b><span>${esc((e.artists||[]).join(', '))}</span></div><div class="source">${esc(e.source)}</div><div class="rank">#${esc(e.rank)}</div><div><span class="pill ${movementClass(e)}">${esc(movement(e))}</span></div></div>`;}
-function flattenHistory(v){if(Array.isArray(v))return v;if(v&&typeof v==='object')return Object.values(v).flatMap(flattenHistory);return[];}
+function flatten(v){if(Array.isArray(v))return v;if(v&&typeof v==='object')return Object.values(v).flatMap(flatten);return[];}
 async function load(){
  try{
-  const response=await fetch('data/latest.json?'+Date.now(),{cache:'no-store'});if(!response.ok)throw new Error('latest.json unavailable');dataset=await response.json();
-  const sources=dataset.sources||[];const entries=allEntries();const artists=new Set(entries.flatMap(e=>e.artists||[]).map(norm));
-  document.querySelector('#charts').textContent=sources.length;document.querySelector('#entries').textContent=entries.length;document.querySelector('#artists').textContent=artists.size;
-  let historyCount=0;try{const h=await fetch('data/history/index.json?'+Date.now(),{cache:'no-store'});if(h.ok)historyCount=flattenHistory(await h.json()).length;}catch{}document.querySelector('#history').textContent=historyCount||'—';
+  const r=await fetch('data/latest.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('latest.json unavailable');dataset=await r.json();
+  const sources=dataset.sources||[],entries=allEntries();
+  document.querySelector('#charts').textContent=sources.length;
+  document.querySelector('#entries').textContent=entries.length;
+  document.querySelector('#artists').textContent=new Set(entries.flatMap(e=>e.artists||[]).map(norm)).size;
+  try{const h=await fetch('data/history/index.json?'+Date.now(),{cache:'no-store'});document.querySelector('#history').textContent=h.ok?flatten(await h.json()).length:'—';}catch{document.querySelector('#history').textContent='—';}
   document.querySelector('#updated').textContent=`Live dataset generated ${new Date(dataset.generatedAt).toLocaleString()}`;
   document.querySelector('#coverage').innerHTML=sources.map(s=>`<div class="source-card"><b>${esc(s.name)}</b><div class="status">${s.status==='ok'?`${esc(s.count)} entries loaded`:`Unavailable: ${esc(s.error||'source error')}`}</div></div>`).join('');
   renderResults(document.querySelector('#search').value);
- }catch(error){document.querySelector('#updated').textContent='Live dataset unavailable';document.querySelector('#results').innerHTML='<div class="empty">The chart dataset could not be loaded. The updater must produce data/latest.json before search results can appear.</div>';}
+ }catch{document.querySelector('#updated').textContent='Live dataset unavailable';document.querySelector('#results').innerHTML='<div class="empty">The chart dataset could not be loaded.</div>';}
 }
 document.querySelector('#search').addEventListener('input',e=>renderResults(e.target.value));
 load();setInterval(load,60000);
 </script>
-</body></html>
+</body>
+</html>
