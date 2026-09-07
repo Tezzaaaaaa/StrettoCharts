@@ -30,7 +30,7 @@ function csvRows(text) {
   for (let i = 0; i < text.length; i++) { const c = text[i];
     if (c === '"') { if (quoted && text[i + 1] === '"') { field += '"'; i++; } else quoted = !quoted; }
     else if (c === ',' && !quoted) { row.push(field); field = ''; }
-    else if ((c === '\\n' || c === '\\r') && !quoted) { if (c === '\\r' && text[i + 1] === '\\n') i++; row.push(field); field = ''; if (row.some(v => clean(v))) rows.push(row); row = []; }
+    else if ((c === '\n' || c === '\r') && !quoted) { if (c === '\r' && text[i + 1] === '\n') i++; row.push(field); field = ''; if (row.some(v => clean(v))) rows.push(row); row = []; }
     else field += c;
   }
   if (field || row.length) { row.push(field); rows.push(row); } return rows;
@@ -74,28 +74,28 @@ function parseShazamHtml(text) {
   const html=text.replace(/\\u003c/g,'<').replace(/\\u003e/g,'>'); const out=[];
   const patterns=[
     /(?:"rank"|data-rank)[^\\d]{0,20}(\\d+)[\\s\\S]{0,1500}?(?:"title"|data-title)[^"']*["']([^"']+)["'][\\s\\S]{0,1000}?(?:"artist"|data-artist)[^"']*["']([^"']+)["']/gi,
-    /<a[^>]+href="[^"]*\/song\/[^"]+"[^>]*>([\\s\\S]{1,300}?)<\\/a>/gi
+    /<a[^>]+href="[^"]*\/song\/[^"]+"[^>]*>([\s\S]{1,300}?)<\/a>/gi
   ];
-  for(const re of patterns){let m;while((m=re.exec(html))&&out.length<200){if(re===patterns[1]){const textValue=stripHtml(m[1]);const parts=textValue.split(/\\s{2,}|\\n+/).map(clean).filter(Boolean);if(parts.length>=2)out.push({rank:out.length+1,title:parts[0],artists:[parts[1]]});}else{const rank=Number(m[1]),title=stripHtml(m[2]),artist=stripHtml(m[3]);if(rank>0&&rank<=200&&title&&artist)out.push({rank,title,artists:[artist]});}}if(out.length)break;}
+  for(const re of patterns){let m;while((m=re.exec(html))&&out.length<200){if(re===patterns[1]){const textValue=stripHtml(m[1]);const parts=textValue.split(/\s{2,}|\n+/).map(clean).filter(Boolean);if(parts.length>=2)out.push({rank:out.length+1,title:parts[0],artists:[parts[1]]});}else{const rank=Number(m[1]),title=stripHtml(m[2]),artist=stripHtml(m[3]);if(rank>0&&rank<=200&&title&&artist)out.push({rank,title,artists:[artist]});}}if(out.length)break;}
   if(!out.length) throw new Error('Shazam markup did not expose chart rows');
   return dedupeByRank(out);
 }
 function parseAriaHtml(text) {
-  const normalized=text.replace(/<script[\\s\\S]*?<\\/script>/gi,' ').replace(/<style[\\s\\S]*?<\\/style>/gi,' ');
-  const stripped=normalized.replace(/<[^>]+>/g,'\\n').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"');
-  const lines=stripped.split(/\\n+/).map(clean).filter(Boolean), out=[];
-  for(let i=0;i<lines.length&&out.length<50;i++){ if(!/^\\d+$/.test(lines[i]))continue; const rank=Number(lines[i]); if(rank<1||rank>50)continue; const title=lines[i+1],artist=lines[i+2]; if(!title||!artist||/^\\d+$/.test(title))continue; const next=lines.slice(i+3,i+9); out.push({rank,title,artists:artist.split(',').map(clean).filter(Boolean),lastWeek:next.find(v=>/last week/i.test(v))||null,peak:next.find(v=>/peak/i.test(v))||null,weeksInChart:next.find(v=>/weeks in/i.test(v))||null}); }
+  const normalized=text.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ');
+  const stripped=normalized.replace(/<[^>]+>/g,'\n').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"');
+  const lines=stripped.split(/\n+/).map(clean).filter(Boolean), out=[];
+  for(let i=0;i<lines.length&&out.length<50;i++){ if(!/^\d+$/.test(lines[i]))continue; const rank=Number(lines[i]); if(rank<1||rank>50)continue; const title=lines[i+1],artist=lines[i+2]; if(!title||!artist||/^\d+$/.test(title))continue; const next=lines.slice(i+3,i+9); out.push({rank,title,artists:artist.split(',').map(clean).filter(Boolean),lastWeek:next.find(v=>/last week/i.test(v))||null,peak:next.find(v=>/peak/i.test(v))||null,weeksInChart:next.find(v=>/weeks in/i.test(v))||null}); }
   return dedupeByRank(out);
 }
 function parseOfficialChartsHtml(text) {
-  const normalized=text.replace(/<script[\\s\\S]*?<\\/script>/gi,' ').replace(/<style[\\s\\S]*?<\\/style>/gi,' ');
-  const lines=normalized.replace(/<[^>]+>/g,'\\n').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').split(/\\n+/).map(clean).filter(Boolean); const out=[];
-  for(let i=0;i<lines.length&&out.length<100;i++){if(!/^Number\\s*\\d+$/i.test(lines[i]))continue;const rank=Number(lines[i].match(/\\d+/)[0]);const title=lines[i+1],artist=lines[i+2];if(title&&artist)out.push({rank,title,artists:artist.split(/[\\/]/).map(clean).filter(Boolean)});}
+  const normalized=text.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ');
+  const lines=normalized.replace(/<[^>]+>/g,'\n').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').split(/\n+/).map(clean).filter(Boolean); const out=[];
+  for(let i=0;i<lines.length&&out.length<100;i++){if(!/^Number\s*\d+$/i.test(lines[i]))continue;const rank=Number(lines[i].match(/\d+/)[0]);const title=lines[i+1],artist=lines[i+2];if(title&&artist)out.push({rank,title,artists:artist.split(/[\/]/).map(clean).filter(Boolean)});}
   if(!out.length) throw new Error('Official Charts markup did not expose chart rows');
   return dedupeByRank(out);
 }
 function parseBillboardHtml(text) {
-  const out=[]; const patterns=[/c-title[^>]*>([\\s\\S]*?)<\\/h3>[\\s\\S]*?c-label[^>]*>([\\s\\S]*?)<\\/span>/gi,/o-chart-results-list__item-title[^>]*>([\\s\\S]*?)<\\/h3>[\\s\\S]*?o-chart-results-list__item-excerpt[^>]*>([\\s\\S]*?)<\\/span>/gi];
+  const out=[]; const patterns=[/c-title[^>]*>([\s\S]*?)<\/h3>[\s\S]*?c-label[^>]*>([\s\S]*?)<\/span>/gi,/o-chart-results-list__item-title[^>]*>([\s\S]*?)<\/h3>[\s\S]*?o-chart-results-list__item-excerpt[^>]*>([\s\S]*?)<\/span>/gi];
   for(const re of patterns){let m;while((m=re.exec(text))&&out.length<200){const title=stripHtml(m[1]),artist=stripHtml(m[2]);if(title&&artist)out.push({rank:out.length+1,title,artists:[artist]});}if(out.length)break;} if(!out.length)throw new Error('Billboard markup did not expose chart rows');return out;
 }
 function dedupeByRank(rows){return [...new Map(rows.map(row=>[row.rank,row])).values()].sort((a,b)=>a.rank-b.rank);}
@@ -116,8 +116,9 @@ async function main(){
   let previous=null; try{previous=JSON.parse(await readFile(LATEST,'utf8'));}catch{}
   const results=await Promise.all(SOURCES.map(async source=>{try{const raw=await fetchSource(source);const old=previous?.sources?.find(s=>s.id===source.id);const entries=addMovement(raw,old);return{id:source.id,name:source.name,type:source.type,sourceUrl:source.url,status:'ok',fetchedAt:updatedAt,count:entries.length,entries};}catch(error){return{id:source.id,name:source.name,type:source.type,sourceUrl:source.url,status:'error',fetchedAt:updatedAt,count:0,error:error instanceof Error?error.message:String(error),entries:[]};}}));
   const ok=results.filter(x=>x.status==='ok'); const artistRankings=calculateArtistRankings(ok); const payload={schemaVersion:3,generatedAt:updatedAt,sources:results,artistRankings};
-  await writeFile(LATEST,JSON.stringify(payload,null,2)+'\\n','utf8');
-  if(ok.length){const date=updatedAt.slice(0,10);await writeFile(new URL(`./${date}.json`,HISTORY_DIR),JSON.stringify(payload,null,2)+'\\n','utf8');let index=[];try{index=JSON.parse(await readFile(HISTORY_INDEX,'utf8'));}catch{}if(!index.some(x=>x.date===date))index.push({date,file:`${date}.json`,generatedAt:updatedAt,sources:ok.map(x=>x.id)});index.sort((a,b)=>b.date.localeCompare(a.date));await writeFile(HISTORY_INDEX,JSON.stringify(index,null,2)+'\\n','utf8');}
-  console.log(`StrettoCharts updated: ${ok.length}/${results.length} sources succeeded; ${artistRankings.length} artists ranked`);for(const r of results)console.log(`${r.status.toUpperCase()} ${r.id}: ${r.count}`);if(!ok.length)process.exitCode=1;
+  await writeFile(LATEST,JSON.stringify(payload,null,2)+'\n','utf8');
+  if(ok.length){const date=updatedAt.slice(0,10);await writeFile(new URL(`./${date}.json`,HISTORY_DIR),JSON.stringify(payload,null,2)+'\n','utf8');let index=[];try{index=JSON.parse(await readFile(HISTORY_INDEX,'utf8'));}catch{}if(!index.includes(date))index.push(date);index.sort().reverse();await writeFile(HISTORY_INDEX,JSON.stringify(index,null,2)+'\n','utf8');}
+  console.log(`Updated ${ok.length}/${results.length} sources at ${updatedAt}`);
 }
-main().catch(error=>{console.error(error);process.exitCode=1;});
+
+main().catch(error=>{console.error(error);process.exit(1);});
