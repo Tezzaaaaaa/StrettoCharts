@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'scripts/update.mjs'
+      - '.github/workflows/update.yml'
   schedule:
     - cron: '17 * * * *'
 
