@@ -1,0 +1,54 @@
+/* Visual media cards for the "What stands out" analytics story. */
+(function(){
+  const d=document,$=s=>d.querySelector(s), norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+  const uniq=a=>[...new Set(a.filter(Boolean))];
+  let data=null;
+  const entries=()=>data?.sources?.flatMap(s=>(s.entries||[]).map(e=>({...e,source:s.name,status:s.status}))).filter(e=>e.status==='ok'&&Number.isFinite(Number(e.rank)))||[];
+  async function artwork(kind,name,artist){
+    try{
+      const entity=kind==='Artist'?'musicArtist':kind==='Album'?'album':'song';
+      const term=artist&&kind!=='Artist'?name+' '+artist:name;
+      const r=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(term)+'&media=music&entity='+entity+'&limit=5&country=AU',{signal:AbortSignal.timeout(4500)});
+      if(!r.ok)return '';
+      const x=await r.json(), v=(x.results||[])[0];
+      return v?.artworkUrl100||'';
+    }catch(_){return ''}
+  }
+  function sourceEntries(){return entries()}
+  function mediaStats(){
+    const es=sourceEntries();
+    const songs=new Map(),artists=new Map(),albums=new Map();
+    es.forEach(e=>{
+      const artistsList=e.artists||[], artist=artistsList[0]||'';
+      if(e.title){const k=norm(e.title)+'::'+norm(artist);const x=songs.get(k)||{kind:'Song',name:e.title,artist,artworkUrl:e.artworkUrl,ranks:[],sources:new Set(),movement:[]};x.ranks.push(+e.rank);x.sources.add(e.source);if(Number.isFinite(+e.movement))x.movement.push(+e.movement);if(!x.artworkUrl&&e.artworkUrl)x.artworkUrl=e.artworkUrl;songs.set(k,x)}
+      artistsList.forEach(a=>{const k=norm(a),x=artists.get(k)||{kind:'Artist',name:a,artworkUrl:'',ranks:[],sources:new Set()};x.ranks.push(+e.rank);x.sources.add(e.source);if(!x.artworkUrl&&e.artworkUrl)x.artworkUrl=e.artworkUrl;artists.set(k,x)});
+      const al=e.album||e.albumName||e.release||e.releaseTitle||'';
+      if(al){const k=norm(al)+'::'+norm(artist),x=albums.get(k)||{kind:'Album',name:al,artist,artworkUrl:e.artworkUrl,ranks:[],sources:new Set()};x.ranks.push(+e.rank);x.sources.add(e.source);if(!x.artworkUrl&&e.artworkUrl)x.artworkUrl=e.artworkUrl;albums.set(k,x)}
+    });
+    const song=[...songs.values()].filter(x=>x.ranks.length).map(x=>({...x,avg:x.ranks.reduce((a,b)=>a+b,0)/x.ranks.length})).sort((a,b)=>a.avg-b.avg||b.sources.size-a.sources.size)[0];
+    const artist=[...artists.values()].filter(x=>x.ranks.length).sort((a,b)=>b.sources.size-a.sources.size||a.ranks.reduce((p,q)=>p+q,0)/a.ranks.length-b.ranks.reduce((p,q)=>p+q,0)/p.ranks.length)[0];
+    const rising=[...songs.values()].filter(x=>x.movement.length).map(x=>({...x,rise:Math.max(...x.movement)})).sort((a,b)=>b.rise-a.rise)[0];
+    const album=[...albums.values()].filter(x=>x.ranks.length).sort((a,b)=>b.sources.size-a.sources.size||a.ranks.length-b.ranks.length)[0];
+    return [song&&{...song,label:'Best current song performance',detail:`Average position #${song.avg.toFixed(1)} across ${song.sources.size} chart source${song.sources.size===1?'':'s'}.`},artist&&{...artist,label:'Widest chart reach',detail:`Appears across ${artist.sources.size} tracked chart source${artist.sources.size===1?'':'s'} in the current dataset.`},rising&&{...rising,label:'Biggest upward move',detail:`Up ${rising.rise} place${rising.rise===1?'':'s'} on at least one current chart.`},album&&{...album,label:'Most visible album',detail:`Represented by ${album.ranks.length} current chart entr${album.ranks.length===1?'y':'ies'} across ${album.sources.size} source${album.sources.size===1?'':'s'}.`}].filter(Boolean).slice(0,4);
+  }
+  async function render(){
+    const host=$('.insight-list'); if(!host)return;
+    const cards=mediaStats(); if(!cards.length)return;
+    host.className='standout-grid';
+    host.innerHTML=cards.map((x,i)=>`<article class="standout-card" data-card="${i}"><div class="standout-art-wrap"><div class="standout-art-fallback">${x.kind==='Artist'?'ARTIST':x.kind==='Album'?'ALBUM':'SONG'}</div>${x.artworkUrl?`<img class="standout-art" src="${esc(x.artworkUrl)}" alt="" loading="lazy">`:''}<span class="standout-kind">${esc(x.kind)}</span></div><div class="standout-copy"><span class="standout-label">${esc(x.label)}</span><h4>${esc(x.name)}</h4><p>${esc(x.artist&&x.kind!=='Artist'?x.artist:x.detail)}</p>${x.artist&&x.kind==='Artist'?`<small>${esc(x.detail)}</small>`:''}</div></article>`).join('');
+    const missing=cards.filter(x=>!x.artworkUrl);
+    await Promise.all(missing.map(async x=>{x.artworkUrl=await artwork(x.kind,x.name,x.artist)}));
+    missing.forEach(x=>{const card=[...d.querySelectorAll('.standout-card')].find(c=>c.querySelector('h4')?.textContent===x.name);if(card&&x.artworkUrl){const wrap=card.querySelector('.standout-art-wrap');const img=d.createElement('img');img.className='standout-art';img.src=x.artworkUrl;img.alt='';img.loading='lazy';wrap.prepend(img)}});
+  }
+  function addStyle(){
+    const s=d.createElement('style');s.textContent=`.standout-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.standout-card{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:stretch;padding:12px;background:#fff;border:1px solid #e4e4ed;border-radius:20px;box-shadow:0 8px 28px #24243b0d;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease}.standout-card:hover{transform:translateY(-2px);box-shadow:0 14px 34px #24243b16}.standout-art-wrap{position:relative;min-height:96px;border-radius:15px;overflow:hidden;background:linear-gradient(135deg,#ff3d81,#7657ff,#19a7ff)}.standout-art,.standout-art-fallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.standout-art-fallback{display:grid;place-items:center;color:#fff;font-size:9px;font-weight:900;letter-spacing:.12em;background:linear-gradient(135deg,#ff3d81,#7657ff)}.standout-art{z-index:1}.standout-kind{position:absolute;z-index:2;left:7px;bottom:7px;padding:4px 7px;border-radius:999px;background:#11111bcc;color:#fff;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.standout-copy{min-width:0;display:flex;flex-direction:column;justify-content:center}.standout-label{font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:#7657ff}.standout-copy h4{margin:5px 0 4px;font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.standout-copy p,.standout-copy small{margin:0;color:#717282;font-size:10px;line-height:1.45}.standout-copy small{margin-top:4px}@media(max-width:700px){.standout-grid{grid-template-columns:1fr}.standout-card{grid-template-columns:82px 1fr}.standout-art-wrap{min-height:82px}}@media(max-width:430px){.standout-grid{grid-template-columns:1fr}.standout-card{grid-template-columns:72px 1fr}.standout-art-wrap{min-height:72px}.standout-copy h4{font-size:14px}}`;
+    d.head.appendChild(s);
+  }
+  async function init(){
+    addStyle();
+    try{const r=await fetch('data/latest.json?analytics='+Date.now());if(!r.ok)return;data=await r.json();render()}catch(_){return}
+    const a=$('#analytics');if(a)new MutationObserver(()=>{if($('.insight-list'))render()}).observe(a,{childList:true,subtree:true});
+  }
+  if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',init);else init();
+})();
