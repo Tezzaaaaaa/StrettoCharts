@@ -13,23 +13,20 @@
 <header class="top">
 <div class="eyebrow">Live music-chart tracker</div>
 <div class="h1">StrettoCharts</div>
-<p class="sub">Search an artist, celebrity, song, or track. For an artist, StrettoCharts groups their music together and shows <strong>every chart position</strong> that each song currently holds.</p>
+<p class="sub">Search an artist, celebrity, song, or track. For an artist, StrettoCharts groups their music together and shows every chart position that each song currently holds.</p>
 <div class="search"><input id="search" type="search" autocomplete="off" placeholder="Search an artist, celebrity or song…"><small class="examples">Try Taylor Swift, Lady Gaga, The Weeknd, Espresso</small></div>
 <div id="updated" class="muted">Loading live chart data…</div>
 </header>
-
 <div class="grid">
 <div class="card"><div id="charts" class="num">—</div><div class="label">Charts tracked</div></div>
 <div class="card"><div id="entries" class="num">—</div><div class="label">Current chart entries</div></div>
 <div class="card"><div id="artists" class="num">—</div><div class="label">Artists indexed</div></div>
 <div class="card"><div id="history" class="num">—</div><div class="label">Historical snapshots</div></div>
 </div>
-
 <section class="section">
-<div class="result-head"><h2 id="resultTitle">Search results</h2><div id="resultCount" class="muted"></div></div>
-<div id="results"><div class="empty">Search for an artist or song to see chart positions.</div></div>
+<div class="result-head"><h2 id="resultTitle">Current chart positions</h2><div id="resultCount" class="muted"></div></div>
+<div id="results"><div class="empty">Loading current charts…</div></div>
 </section>
-
 <section class="section">
 <h2>Current chart coverage</h2>
 <div id="coverage" class="sources"></div>
@@ -47,11 +44,24 @@ function movement(e){if(e.movementLabel)return e.movementLabel;if(e.movement==nu
 function movementClass(e){if(e.movement==null)return 'new';return e.movement>0?'up':e.movement<0?'down':'';}
 function songKey(e){return norm(e.title)+'::'+norm((e.artists||[]).join('|'));}
 function chartRow(e){return `<div class="chart-row"><div>${esc(e.type==='weekly'?'Weekly chart':'Daily chart')}</div><div class="source">${esc(e.source)}</div><div class="rank">#${esc(e.rank)}</div><div><span class="pill ${movementClass(e)}">${esc(movement(e))}</span></div></div>`;}
-function renderResults(q){
+function renderCurrent(){
  const box=document.querySelector('#results');
- q=q.trim();
- if(!q){document.querySelector('#resultTitle').textContent='Search results';document.querySelector('#resultCount').textContent='';box.innerHTML='<div class="empty">Search for an artist or song to see chart positions.</div>';return;}
- const entries=allEntries();
+ const entries=allEntries().filter(e=>e.status==='ok').sort((a,b)=>a.source.localeCompare(b.source)||a.rank-b.rank);
+ const bySource=new Map();
+ entries.forEach(e=>{if(!bySource.has(e.source))bySource.set(e.source,[]);bySource.get(e.source).push(e);});
+ const cards=[];
+ [...bySource.entries()].forEach(([source,items])=>{
+   const shown=items.slice(0,10);
+   cards.push(`<article class="song-card"><div class="song-title">${esc(source)}</div><div class="song-artists">Top ${shown.length} current positions</div><div class="chart-list">${shown.map(chartRow).join('')}</div></article>`);
+ });
+ document.querySelector('#resultTitle').textContent='Current chart positions';
+ document.querySelector('#resultCount').textContent=`${entries.length} loaded positions`;
+ box.innerHTML=cards.length?cards.join(''):'<div class="empty">No current chart data is available.</div>';
+}
+function renderResults(q){
+ const box=document.querySelector('#results');q=q.trim();
+ if(!q){renderCurrent();return;}
+ const entries=allEntries().filter(e=>e.status==='ok');
  const artistEntries=entries.filter(e=>artistMatches(e,q));
  const songEntries=entries.filter(e=>songMatches(e,q));
  const exactArtistNames=[...new Map(artistEntries.flatMap(e=>(e.artists||[]).filter(a=>norm(a).includes(norm(q))).map(a=>[norm(a),a])).values()];
@@ -77,16 +87,18 @@ function renderResults(q){
 function flatten(v){if(Array.isArray(v))return v;if(v&&typeof v==='object')return Object.values(v).flatMap(flatten);return[];}
 async function load(){
  try{
-  const r=await fetch('data/latest.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('latest.json unavailable');dataset=await r.json();
+  const base=new URL('./data/latest.json',location.href);base.searchParams.set('t',Date.now());
+  const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw Error('latest.json unavailable');
+  dataset=await r.json();
   const sources=dataset.sources||[],entries=allEntries();
-  document.querySelector('#charts').textContent=sources.length;
-  document.querySelector('#entries').textContent=entries.length;
-  document.querySelector('#artists').textContent=new Set(entries.flatMap(e=>e.artists||[]).map(norm)).size;
-  try{const h=await fetch('data/history/index.json?'+Date.now(),{cache:'no-store'});document.querySelector('#history').textContent=h.ok?flatten(await h.json()).length:'—';}catch{document.querySelector('#history').textContent='—';}
+  document.querySelector('#charts').textContent=sources.filter(s=>s.status==='ok').length;
+  document.querySelector('#entries').textContent=entries.filter(e=>e.status==='ok').length;
+  document.querySelector('#artists').textContent=new Set(entries.filter(e=>e.status==='ok').flatMap(e=>e.artists||[]).map(norm)).size;
+  try{const h=new URL('./data/history/index.json',location.href);h.searchParams.set('t',Date.now());const hr=await fetch(h,{cache:'no-store'});document.querySelector('#history').textContent=hr.ok?flatten(await hr.json()).length:'—';}catch{document.querySelector('#history').textContent='—';}
   document.querySelector('#updated').textContent=`Live dataset generated ${new Date(dataset.generatedAt).toLocaleString()}`;
   document.querySelector('#coverage').innerHTML=sources.map(s=>`<div class="source-card"><b>${esc(s.name)}</b><div class="status">${s.status==='ok'?`${esc(s.count)} entries loaded`:`Unavailable: ${esc(s.error||'source error')}`}</div></div>`).join('');
   renderResults(document.querySelector('#search').value);
- }catch{document.querySelector('#updated').textContent='Live dataset unavailable';document.querySelector('#results').innerHTML='<div class="empty">The chart dataset could not be loaded.</div>';}
+ }catch(error){document.querySelector('#updated').textContent='Live dataset unavailable';document.querySelector('#results').innerHTML='<div class="empty">The chart dataset could not be loaded.</div>';console.error(error);}
 }
 document.querySelector('#search').addEventListener('input',e=>renderResults(e.target.value));
 load();setInterval(load,60000);
