@@ -1,15 +1,9 @@
 name: Deploy StrettoCharts dashboard
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'index.html'
-      - 'src/**'
-      - 'data/**'
-      - 'package.json'
-      - 'vite.config.js'
-      - '.github/workflows/pages.yml'
+  workflow_run:
+    workflows: ["pages build and deployment"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -23,6 +17,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -30,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v5
