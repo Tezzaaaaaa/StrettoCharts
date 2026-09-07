@@ -3,6 +3,10 @@ name: Deploy StrettoCharts dashboard
 on:
   push:
     branches: [main]
+    paths:
+      - 'index.html'
+      - 'data/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -11,8 +15,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: strettocharts-pages
-  cancel-in-progress: false
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -23,26 +27,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: npm install --package-lock=false
-
-      - name: Build Svelte dashboard
-        run: npm run build
-
       - name: Setup Pages
         uses: actions/configure-pages@v6
-
-      - name: Upload Pages artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: './dist'
-
+          path: '.'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
