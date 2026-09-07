@@ -2,6 +2,9 @@ name: Update music charts
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/update.mjs'
   schedule:
     - cron: '17 * * * *'
 
