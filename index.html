@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StrettoCharts</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f5f5f7}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1200px;margin:auto;padding:32px 20px 60px}.top{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:28px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:700;color:#666}.h1{font-size:clamp(34px,6vw,64px);line-height:.95;margin:8px 0}.sub{color:#666;max-width:680px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}.card{background:#fff;border:1px solid #ddd;border-radius:18px;padding:18px}.num{font-size:32px;font-weight:750}.label{font-size:13px;color:#666;margin-top:4px}.section{margin-top:34px}.section h2{margin-bottom:12px}.table{background:#fff;border:1px solid #ddd;border-radius:18px;overflow:hidden}.row{display:grid;grid-template-columns:64px minmax(180px,1fr) 180px 90px 90px;gap:12px;padding:13px 16px;border-bottom:1px solid #eee;align-items:center}.row:last-child{border-bottom:0}.head{font-size:12px;font-weight:700;color:#666;background:#fafafa}.rank{font-weight:750}.muted{color:#777}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;font-size:12px}.up{background:#e7f7ed}.down{background:#fdeaea}.new{background:#e8f0ff}.empty{padding:36px;text-align:center;color:#666}.sources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.source{background:#fff;border:1px solid #ddd;border-radius:14px;padding:14px}.source b{display:block}.status{font-size:12px;color:#777;margin-top:5px}@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.sources{grid-template-columns:1fr}.row{grid-template-columns:44px 1fr 80px}.row>:nth-child(3),.row>:nth-child(5){display:none}.top{display:block}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="top"><div><div class="eyebrow">Live data dashboard</div><div class="h1">StrettoCharts</div><p class="sub">Cross-chart music rankings built from the repository's automated chart updater. This page reads the committed StrettoCharts data directly.</p></div><div id="updated" class="muted">Loading…</div></div>
+<div class="grid"><div class="card"><div id="charts" class="num">—</div><div class="label">Charts tracked</div></div><div class="card"><div id="entries" class="num">—</div><div class="label">Current entries</div></div><div class="card"><div id="artists" class="num">—</div><div class="label">Artists ranked</div></div><div class="card"><div id="history" class="num">—</div><div class="label">Historical snapshots</div></div></div>
+<section class="section"><h2>Current charts</h2><div id="table" class="table"><div class="empty">Loading current chart data…</div></div></section>
+<section class="section"><h2>Chart sources</h2><div id="sources" class="sources"></div></section>
+</main>
+<script>
+const coverage=['Spotify Global Daily','Spotify Global Viral 50','Apple Music Global Top 100','Apple Music Australia Top 100','YouTube Global Top Songs Daily','YouTube Global Top Songs Weekly','YouTube Global Top Artists Weekly','Deezer Global Top Tracks','Shazam US Top 200','ARIA Top 50 Singles (Australia)','Official UK Singles Top 100','Billboard Hot 100','Billboard Global 200'];
+const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\':'&#92;'}[c]));
+function flatten(v){if(Array.isArray(v))return v;if(v&&typeof v==='object'){for(const k of ['charts','entries','data','results','songs','tracks','latest'])if(v[k]){const x=flatten(v[k]);if(x.length)return x}return Object.values(v).flatMap(flatten)}return[]}
+async function load(){
+ let latest=null,history=null;try{latest=await fetch('data/latest.json?'+Date.now()).then(r=>r.ok?r.json():null)}catch{}try{history=await fetch('data/history/index.json?'+Date.now()).then(r=>r.ok?r.json():null)}catch{}
+ const entries=flatten(latest).filter(x=>x&&typeof x==='object'&&(x.title||x.name||x.track||x.song));
+ document.querySelector('#charts').textContent=coverage.length;
+ document.querySelector('#entries').textContent=entries.length||'—';
+ const artistNames=new Set(entries.flatMap(x=>Array.isArray(x.artists)?x.artists:[x.artist]).filter(Boolean));document.querySelector('#artists').textContent=artistNames.size||'—';
+ const hs=flatten(history);document.querySelector('#history').textContent=hs.length||'—';
+ document.querySelector('#updated').textContent=latest?'Latest committed data loaded':'Awaiting first chart dataset';
+ const rows=entries.slice(0,100).map((x,i)=>{const rank=x.rank??x.position??i+1;const title=x.title??x.name??x.track??x.song;const artists=Array.isArray(x.artists)?x.artists.join(', '):(x.artist??'');const movement=x.movement??'';const cls=movement==='up'?'up':movement==='down'?'down':movement==='new'?'new':'';return `<div class="row"><div class="rank">${esc(rank)}</div><div><b>${esc(title)}</b><div class="muted">${esc(artists)}</div></div><div class="muted">${esc(x.source??x.chart??'')}</div><div><span class="pill ${cls}">${esc(movement||'—')}</span></div><div>${esc(x.peak??'—')}</div></div>`}).join('');
+ document.querySelector('#table').innerHTML=rows?`<div class="row head"><div>#</div><div>Track</div><div>Source</div><div>Move</div><div>Peak</div></div>${rows}`:'<div class="empty">The updater has not committed a current dataset yet. Run the chart updater to populate <code>data/latest.json</code>.</div>';
+ document.querySelector('#sources').innerHTML=coverage.map(x=>`<div class="source"><b>${esc(x)}</b><div class="status">Tracked by the StrettoCharts updater</div></div>`).join('');
+}
+load();setInterval(load,60000);
+</script></body></html>
