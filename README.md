@@ -2,6 +2,12 @@
 
 Automated music-chart updater, historical archive and cross-chart ranking engine.
 
+## Live dashboard
+
+**[Open the StrettoCharts live dashboard](https://tezzaaaaaa.github.io/StrettoCharts/)**
+
+The dashboard reads the committed StrettoCharts dataset and presents the current chart entries, movement, peaks, artist coverage and tracked chart sources. It is not a mockup: it consumes `data/latest.json` and `data/history/index.json` produced by the updater.
+
 ## Current chart coverage
 
 ### Streaming platforms
@@ -66,5 +72,9 @@ npm run update
 - A failed source is recorded rather than silently omitted.
 - Missing values are represented as `null`; the updater does not fabricate chart statistics.
 - Chart movement is matched by normalized title + artist combination.
-- Historical files are date-stamped so the dataset can be consumed by a future dashboard/API.
+- Historical files are date-stamped so the dataset can be consumed by the dashboard/API.
 - Platform charts and industry charts remain identifiable as separate sources rather than being falsely presented as one official ranking.
+
+## Dashboard deployment
+
+The repository includes a GitHub Actions Pages workflow at `.github/workflows/pages.yml`. It publishes the dashboard from `index.html` and the committed `data/` directory whenever the dashboard or chart data changes.
