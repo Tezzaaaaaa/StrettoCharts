@@ -11,8 +11,7 @@
   const $=s=>d.querySelector(s);
   const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
   const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
-  const text=(e,...keys)=>{for(const k of keys)if(e?.[k]!=null&&String(e[k]).trim())return String(e[k]).trim();return ''};
-  const state={data:null,key:''};
+  const state={data:null,key:'',leaderArt:new Set(),leaderArtBusy:false};
 
   function entries(){
     return state.data?.sources?.flatMap(s=>(s.entries||[]).map(e=>({...e,source:s.name,status:s.status})))
@@ -33,6 +32,32 @@
   async function lookup(id,entity){
     const j=await getJSON('https://itunes.apple.com/lookup?id='+encodeURIComponent(id)+'&entity='+entity+'&country=AU');
     return j?.results||[];
+  }
+
+  async function enrichLeaderArt(){
+    const cards=[...d.querySelectorAll('#results .song')];
+    if(!cards.length||state.leaderArtBusy)return;
+    state.leaderArtBusy=true;
+    try{
+      await Promise.all(cards.map(async card=>{
+        const image=card.querySelector('.art');
+        const title=card.querySelector('.title')?.textContent.trim()||'';
+        const artist=card.querySelector('.artists')?.textContent.trim()||'';
+        if(!image||!title)return;
+        const key=norm(title)+'::'+norm(artist);
+        if(state.leaderArt.has(key))return;
+        state.leaderArt.add(key);
+        const results=await iTunesSearch(title+(artist?' '+artist:''),'song',12);
+        const exact=results.find(x=>norm(x.trackName)===norm(title)&&(!artist||norm(x.artistName)===norm(artist)))
+          ||results.find(x=>norm(x.trackName)===norm(title));
+        const art=(exact?.artworkUrl100||'').replace('100x100','600x600');
+        if(art){
+          image.src=art;
+          image.alt='';
+          image.removeAttribute('data-artwork-missing');
+        }
+      }));
+    }finally{state.leaderArtBusy=false}
   }
 
   function injectStyle(){
@@ -125,7 +150,9 @@
   }
 
   async function render(){
-    if(!state.data){try{const r=await fetch('data/latest.json');if(r.ok)state.data=await r.json()}catch(_){return}}
+    if(!state.data){try{const r=await fetch('data/latest.json');if(r.ok)state.data=await r.json()}catch(_){}
+    }
+    await enrichLeaderArt();
     const profile=$('.profile');if(!profile)return;
     const kind=profile.querySelector('.profile-kind')?.textContent.replace(/\s*profile\s*$/i,'').trim()||'';
     const name=profile.querySelector('.profile-name')?.textContent.trim()||'';
@@ -140,6 +167,10 @@
     profile.insertAdjacentElement('afterend',wrap);
   }
 
-  function init(){injectStyle();render();new MutationObserver(()=>render()).observe(d.body,{childList:true,subtree:true})}
+  function init(){
+    injectStyle();
+    render();
+    new MutationObserver(()=>{clearTimeout(init.timer);init.timer=setTimeout(()=>render(),80)}).observe(d.body,{childList:true,subtree:true});
+  }
   if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',init);else init();
 })();
