@@ -1,84 +1,180 @@
-/* StrettoCharts Rhea layout
-   Rhea-inspired density and organisation.
-   Preserves the existing StrettoCharts visual language.
+/* StrettoCharts — Rhea visual system
+   Replaces the previous Apple-inspired presentation with a compact,
+   neutral, product-interface layout while keeping the existing markup.
 */
 
 :root {
-  --rhea-radius: 18px;
-  --rhea-radius-sm: 12px;
+  --rhea-bg: #fafafa;
+  --rhea-surface: #ffffff;
+  --rhea-surface-muted: #f4f4f5;
+  --rhea-border: #e4e4e7;
+  --rhea-border-strong: #d4d4d8;
+  --rhea-text: #18181b;
+  --rhea-muted: #71717a;
+  --rhea-accent: #18181b;
+  --rhea-radius: 10px;
+  --rhea-radius-sm: 7px;
   --rhea-gap: 12px;
-  --rhea-section-gap: 56px;
 }
 
-/* Overall density */
+html,
+body {
+  background: var(--rhea-bg) !important;
+  color: var(--rhea-text) !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+body {
+  overflow-x: hidden;
+}
+
 .wrap {
-  padding-bottom: 64px !important;
+  width: min(100% - 32px, 1280px) !important;
+  padding-bottom: 56px !important;
 }
 
-/* Hero: retain the existing identity, reduce excess vertical space */
+/* Compact application header / hero */
 .hero {
-  padding-top: 72px !important;
-  padding-bottom: 60px !important;
+  margin: 0 -16px !important;
+  padding: 44px max(16px, calc((100vw - 1280px) / 2 + 16px)) 36px !important;
+  background: var(--rhea-bg) !important;
+  color: var(--rhea-text) !important;
+  border-bottom: 1px solid var(--rhea-border) !important;
+  box-shadow: none !important;
 }
 
-/* Search controls */
+.hero:after {
+  display: none !important;
+}
+
+.eyebrow {
+  color: var(--rhea-muted) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.brand {
+  margin: 8px 0 12px !important;
+  font-size: clamp(36px, 5vw, 56px) !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1 !important;
+}
+
+.hero p {
+  max-width: 680px !important;
+  color: var(--rhea-muted) !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+
 .searchbar {
+  max-width: 760px !important;
   gap: 8px !important;
-  margin-top: 24px !important;
+  margin-top: 20px !important;
 }
 
 .search,
 .confirm {
-  height: 52px !important;
+  height: 42px !important;
   border-radius: var(--rhea-radius-sm) !important;
 }
 
-.confirm {
-  padding-inline: 20px !important;
+.search {
+  border: 1px solid var(--rhea-border-strong) !important;
+  background: var(--rhea-surface) !important;
+  color: var(--rhea-text) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04) !important;
+  backdrop-filter: none !important;
 }
 
-/* Metrics become a compact information surface */
+.search::placeholder {
+  color: #a1a1aa !important;
+}
+
+.search:focus {
+  border-color: #a1a1aa !important;
+  box-shadow: 0 0 0 2px rgba(24,24,27,.08) !important;
+}
+
+.confirm {
+  padding: 0 16px !important;
+  background: var(--rhea-accent) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.updated {
+  margin-top: 9px !important;
+  color: var(--rhea-muted) !important;
+  font-size: 12px !important;
+}
+
+/* Compact metric strip */
 .metrics {
-  gap: 1px !important;
-  margin-bottom: 52px !important;
+  margin: 24px 0 48px !important;
+  gap: 0 !important;
+  background: var(--rhea-border) !important;
+  border: 1px solid var(--rhea-border) !important;
   border-radius: var(--rhea-radius) !important;
+  box-shadow: none !important;
+}
+
+.metric,
+.metric:first-child,
+.metric:last-child {
+  border-radius: 0 !important;
 }
 
 .metric {
-  padding: 18px !important;
-}
-
-.metric:first-child {
-  border-radius: 17px 0 0 17px !important;
-}
-
-.metric:last-child {
-  border-radius: 0 17px 17px 0 !important;
+  padding: 16px !important;
+  background: var(--rhea-surface) !important;
 }
 
 .num {
-  font-size: 26px !important;
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
 }
 
-/* Sections */
+.label {
+  color: var(--rhea-muted) !important;
+  font-size: 11px !important;
+}
+
+/* Section hierarchy */
 .section {
-  margin-top: var(--rhea-section-gap) !important;
+  margin-top: 48px !important;
 }
 
 .head {
-  margin-bottom: 16px !important;
+  margin: 0 0 14px !important;
+  align-items: baseline !important;
 }
 
 .head h2 {
-  font-size: 28px !important;
+  color: var(--rhea-text) !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
 }
 
-/* Results */
-.results {
+.head p {
+  color: var(--rhea-muted) !important;
+  font-size: 13px !important;
+}
+
+.results,
+.grid2,
+.grid3 {
   gap: var(--rhea-gap) !important;
 }
 
-/* Cards and panels */
+/* Cards: flat, bordered, compact */
 .chart-summary,
 .panel,
 .album-info,
@@ -88,18 +184,20 @@
 .rank,
 .insight,
 .song {
+  border: 1px solid var(--rhea-border) !important;
   border-radius: var(--rhea-radius) !important;
+  background: var(--rhea-surface) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.025) !important;
 }
 
-/* Standard card density */
 .chart-summary,
 .panel,
 .album-info {
-  padding: 20px !important;
+  padding: 18px !important;
 }
 
 .song {
-  padding: 14px !important;
+  padding: 12px !important;
 }
 
 .art {
@@ -107,124 +205,286 @@
 }
 
 .title {
-  font-size: 19px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
 }
 
-/* Profile */
+.open {
+  border-radius: var(--rhea-radius-sm) !important;
+  background: var(--rhea-surface-muted) !important;
+  color: var(--rhea-text) !important;
+  border: 1px solid var(--rhea-border) !important;
+  box-shadow: none !important;
+}
+
+/* Profiles */
 .profile {
-  border-radius: 24px !important;
-  padding: 28px !important;
+  padding: 24px !important;
+  border-radius: 14px !important;
+  background: var(--rhea-surface) !important;
+  color: var(--rhea-text) !important;
+  border: 1px solid var(--rhea-border) !important;
+  box-shadow: none !important;
 }
 
 .profile-top {
-  gap: 20px !important;
+  gap: 18px !important;
 }
 
 .profile-art {
-  width: 140px !important;
-  height: 140px !important;
-  border-radius: 18px !important;
+  width: 128px !important;
+  height: 128px !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
 }
 
 .profile-name {
-  font-size: clamp(32px, 4.5vw, 54px) !important;
+  font-size: clamp(30px, 4vw, 48px) !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.04em !important;
 }
 
-.profile-stats {
-  margin-top: 14px !important;
+.profile-summary {
+  color: var(--rhea-muted) !important;
+  font-size: 14px !important;
 }
 
-.profile-stat {
-  padding: 14px !important;
-}
-
-/* Dense chart lists */
-.charts {
-  gap: 1px !important;
-  border-radius: 15px !important;
-}
-
-.chart {
-  padding: 11px !important;
-}
-
-/* Analytics / ranking / coverage surfaces */
-.grid2,
-.grid3 {
-  gap: 12px !important;
-}
-
-.rankings,
-.coverage {
-  gap: 1px !important;
-  border-radius: var(--rhea-radius) !important;
-}
-
-.rank,
-.source {
-  padding: 18px !important;
-}
-
-/* Banners */
-.banner {
-  border-radius: 22px !important;
-  padding: 26px !important;
-}
-
-/* Empty / notice states */
-.empty {
-  border-radius: var(--rhea-radius) !important;
-  padding: 44px 20px !important;
-}
-
-.notice {
-  padding: 12px 14px !important;
+.profile-actions {
   border-radius: var(--rhea-radius-sm) !important;
 }
 
-/* Keep the leader rail compact */
-#results:not(:has(.profile)) {
-  grid-auto-columns: minmax(260px, 32%) !important;
-  gap: 12px !important;
+.profile-stats {
+  margin-top: 16px !important;
+  gap: 0 !important;
+  background: var(--rhea-border) !important;
+  border: 1px solid var(--rhea-border) !important;
+  border-radius: var(--rhea-radius) !important;
+  overflow: hidden !important;
 }
 
-/* Mobile */
+.profile-stat {
+  padding: 13px !important;
+  border-radius: 0 !important;
+  background: var(--rhea-surface) !important;
+}
+
+.profile-stat strong {
+  font-size: 21px !important;
+}
+
+/* Dense chart rows */
+.charts,
+.rankings,
+.coverage {
+  gap: 0 !important;
+  background: var(--rhea-border) !important;
+  border: 1px solid var(--rhea-border) !important;
+  border-radius: var(--rhea-radius) !important;
+  overflow: hidden !important;
+}
+
+.chart,
+.rank,
+.source {
+  padding: 12px 14px !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: var(--rhea-surface) !important;
+}
+
+.chart:nth-child(even),
+.rank:nth-child(even),
+.source:nth-child(even) {
+  background: var(--rhea-surface-muted) !important;
+}
+
+/* Remove Apple-style rainbow treatment */
+.bar i,
+.fill {
+  background: var(--rhea-accent) !important;
+}
+
+.banner,
+.notice,
+.empty {
+  border: 1px solid var(--rhea-border) !important;
+  background: var(--rhea-surface-muted) !important;
+  color: var(--rhea-text) !important;
+  box-shadow: none !important;
+}
+
+.banner {
+  border-radius: 12px !important;
+  padding: 22px !important;
+}
+
+.banner p,
+.notice {
+  color: var(--rhea-muted) !important;
+}
+
+.chip {
+  background: var(--rhea-surface) !important;
+  border: 1px solid var(--rhea-border) !important;
+  border-radius: 999px !important;
+}
+
+.empty {
+  border-radius: var(--rhea-radius) !important;
+  padding: 40px 20px !important;
+}
+
+.notice {
+  padding: 10px 12px !important;
+  border-radius: var(--rhea-radius-sm) !important;
+}
+
+/* Leader cards remain a compact horizontal rail */
+#results:not(:has(.profile)) {
+  grid-auto-columns: minmax(260px, 31%) !important;
+  gap: 10px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #d4d4d8 transparent !important;
+}
+
+#results:not(:has(.profile)) .song,
+#results:not(:has(.profile)) .chart-summary,
+#results:not(:has(.profile)) .candidate,
+#results:not(:has(.profile)) .confirmation {
+  height: 100% !important;
+}
+
+#results:not(:has(.profile)) .song {
+  padding: 12px !important;
+}
+
+/* Dark mode stays neutral rather than Apple-black */
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background: #09090b !important;
+  color: #fafafa !important;
+}
+
+html[data-theme="dark"] {
+  --rhea-bg: #09090b;
+  --rhea-surface: #18181b;
+  --rhea-surface-muted: #27272a;
+  --rhea-border: #27272a;
+  --rhea-border-strong: #3f3f46;
+  --rhea-text: #fafafa;
+  --rhea-muted: #a1a1aa;
+  --rhea-accent: #fafafa;
+}
+
+html[data-theme="dark"] .hero,
+html[data-theme="dark"] .profile {
+  background: var(--rhea-bg) !important;
+  color: var(--rhea-text) !important;
+}
+
+html[data-theme="dark"] .search {
+  background: var(--rhea-surface) !important;
+  color: var(--rhea-text) !important;
+  border-color: var(--rhea-border-strong) !important;
+}
+
+html[data-theme="dark"] .confirm {
+  background: #fafafa !important;
+  color: #18181b !important;
+}
+
+html[data-theme="dark"] .metric,
+html[data-theme="dark"] .chart-summary,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .album-info,
+html[data-theme="dark"] .search-results-panel,
+html[data-theme="dark"] .analytics-panel,
+html[data-theme="dark"] .source,
+html[data-theme="dark"] .rank,
+html[data-theme="dark"] .insight,
+html[data-theme="dark"] .song,
+html[data-theme="dark"] .chart,
+html[data-theme="dark"] .profile-stat {
+  background: var(--rhea-surface) !important;
+  color: var(--rhea-text) !important;
+}
+
+html[data-theme="dark"] .chart:nth-child(even),
+html[data-theme="dark"] .rank:nth-child(even),
+html[data-theme="dark"] .source:nth-child(even) {
+  background: var(--rhea-surface-muted) !important;
+}
+
+html[data-theme="dark"] .open {
+  background: var(--rhea-surface-muted) !important;
+  color: var(--rhea-text) !important;
+  border-color: var(--rhea-border-strong) !important;
+}
+
+@media (max-width: 1100px) {
+  .profile-art {
+    width: 112px !important;
+    height: 112px !important;
+  }
+}
+
 @media (max-width: 700px) {
+  .wrap {
+    width: 100% !important;
+    padding: 0 16px 48px !important;
+  }
+
   .hero {
-    padding-top: 50px !important;
-    padding-bottom: 40px !important;
+    margin: 0 -16px !important;
+    padding: 36px 16px 30px !important;
+  }
+
+  .brand {
+    font-size: clamp(34px, 12vw, 52px) !important;
+  }
+
+  .hero p {
+    font-size: 14px !important;
+  }
+
+  .searchbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .confirm {
+    width: 100% !important;
   }
 
   .metrics {
-    margin-bottom: 40px !important;
+    margin-bottom: 38px !important;
+    border-radius: var(--rhea-radius) !important;
   }
 
   .section {
-    margin-top: 42px !important;
+    margin-top: 38px !important;
   }
 
   .head h2 {
-    font-size: 25px !important;
+    font-size: 22px !important;
   }
 
   .profile {
-    padding: 18px !important;
-    border-radius: 20px !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
   }
 
   .profile-art {
-    width: 68px !important;
-    height: 68px !important;
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .profile-name {
+    font-size: 26px !important;
   }
 
   .chart-summary,
   .panel,
   .album-info {
-    padding: 16px !important;
-  }
-
-  .rank,
-  .source {
     padding: 16px !important;
   }
 
