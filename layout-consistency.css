@@ -1,0 +1,42 @@
+/* Shared Svelte-inspired layout rules: balanced card internals, predictable alignment, and readable wrapping. */
+:root{--sc-box-gap:14px;--sc-box-radius:20px;--sc-box-pad:18px}
+*,*::before,*::after{box-sizing:border-box}
+.metric,.panel,.song,.source,.rank,.insight,.chart-summary,.summary-item,.stat-chart,.standout-card,.mc-fact,.mc-panel,.ab-card,.as-main,.as-side,.notice,.empty{min-width:0}
+.metric,.rank,.source,.insight,.mc-fact{display:flex;flex-direction:column;justify-content:center;min-height:100%;text-wrap:balance}
+.metric>* ,.rank>* ,.source>* ,.insight>* ,.mc-fact>*{min-width:0;max-width:100%}
+.metric .num,.metric .label,.rank h3,.rank p,.source b,.source small,.insight strong,.insight span,.mc-fact strong,.mc-fact span,.mc-fact small{overflow-wrap:anywhere}
+.rank h3,.source b{max-width:none!important}
+.rank strong{float:none!important;align-self:flex-end;margin-bottom:auto}
+.source .dot{float:none;margin:0 0 0 auto;align-self:flex-end;flex:0 0 auto}
+.chart-summary h3,.panel h3,.stat-chart h3,.mc-panel-head h3,.head h2,.category-head h2,.as-head h2,.ab-head h2{max-width:100%;text-wrap:balance}
+.chart-summary p,.panel-sub,.head p,.category-head p,.as-head p,.ab-head p,.as-main p,.as-footer,.ab-copy p,.ab-explain,.mc-head p,.mc-panel-head p,.mc-explain,.mc-method p{max-width:100%;text-wrap:pretty;overflow-wrap:anywhere}
+.summary-grid,.profile-stats,.rankings,.coverage,.mc-facts,.mc-grid,.ab-content,.standout-grid{align-items:stretch}
+.summary-item{display:flex;flex-direction:column;justify-content:center;min-height:78px}
+.summary-item strong,.profile-stat strong{line-height:1.08}
+.profile-stat{min-width:0}
+.profile-stat strong,.profile-stat span{overflow-wrap:anywhere;text-wrap:balance}
+.standout-copy,.standout-copy h4,.standout-copy p{min-width:0;max-width:100%;overflow-wrap:anywhere;text-wrap:balance}
+.chart{min-width:0}
+.chart>*{min-width:0}
+.chart .source-name,.chart .chart-meta{overflow-wrap:anywhere;text-wrap:pretty}
+.chart .source-name{text-align:left}
+.chart .chart-meta{text-align:right}
+.sc-controlbar{min-width:0}
+.sc-control-label{white-space:nowrap}
+.sc-segmented{min-width:0}
+.sc-segmented button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.as-main,.as-side,.ab-card,.mc-fact,.mc-panel{overflow:hidden}
+@media(max-width:700px){
+  .metric,.rank,.source,.insight,.mc-fact{padding:15px!important}
+  .metric .num{font-size:25px!important}
+  .rank strong{align-self:flex-end;margin-bottom:7px}
+  .rank h3,.source b{max-width:100%!important}
+  .chart .chart-meta{text-align:left!important}
+  .summary-item{min-height:70px}
+  .sc-controlbar{width:100%}
+  .sc-segmented button{overflow:visible;text-overflow:clip;white-space:normal;line-height:1.2}
+}
+@media(max-width:430px){
+  .metric,.rank,.source,.insight,.mc-fact{padding:13px!important}
+  .metric .label,.rank p,.source small,.insight span{line-height:1.35}
+}
