@@ -5,88 +5,10 @@
   let data=null,history=null,lastProfile='';
   const good=x=>x?.sources?.flatMap(s=>(s.entries||[]).filter(e=>s.status==='ok'&&Number.isFinite(+e.rank)).map(e=>({...e,source:s.name})))||[];
   const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-  function style(){
-    if($('#stretto-visual-aids-css'))return;
-    const s=d.createElement('style');s.id='stretto-visual-aids-css';s.textContent=`
-      .sc-viz{background:#fff;border:1px solid #e4e4ed;border-radius:18px;padding:16px;box-shadow:0 6px 20px #24243b0b}
-      .sc-viz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
-      .sc-viz-head h3{margin:0;font-size:14px;letter-spacing:-.02em;color:#171722}
-      .sc-viz-head p{margin:4px 0 0;color:#717282;font-size:10px;line-height:1.45}
-      .sc-viz-value{font-size:17px;font-weight:900;white-space:nowrap}
-      .sc-profile-viz{margin-top:13px}
-      .sc-rank-bars{display:grid;gap:9px}
-      .sc-rank-row{display:grid;grid-template-columns:minmax(100px,1fr) 1.8fr 34px;gap:9px;align-items:center}
-      .sc-rank-label{font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .sc-rank-track{height:9px;background:#ececf3;border-radius:99px;overflow:hidden;position:relative}
-      .sc-rank-fill{height:100%;border-radius:99px;background:#7657ff;transform-origin:left center}
-      .sc-rank-no{text-align:right;font-size:11px;font-weight:900}
-      .sc-viz-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-      .sc-mini-svg{display:block;width:100%;height:auto}
-      .sc-gridline{stroke:#e9e9ef;stroke-width:1}
-      .sc-area{fill:#7657ff1c;stroke:none}
-      .sc-line{fill:none;stroke:#7657ff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-      .sc-dot{fill:#7657ff;stroke:#fff;stroke-width:2}
-      .sc-axis-text{font-size:9px;fill:#717282}
-      .sc-hist{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;align-items:end;height:125px;padding-top:5px}
-      .sc-hist-col{display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:4px}
-      .sc-hist-bar{width:100%;max-width:28px;min-height:3px;border-radius:7px 7px 3px 3px;background:#7657ff}
-      .sc-hist-col span{font-size:8px;color:#717282}
-      .sc-legend{margin-top:8px;color:#717282;font-size:9px}
-      @media(max-width:700px){.sc-viz-grid{grid-template-columns:1fr}.sc-rank-row{grid-template-columns:82px 1fr 32px}.sc-viz{padding:14px}}
-      @media(prefers-reduced-motion:reduce){.sc-rank-fill{transition:none!important}}
-    `;d.head.appendChild(s);
-  }
-  function profileRows(){
-    const p=$('#results .profile');if(!p)return [];
-    return [...p.querySelectorAll('.profile-stat')].map(x=>({value:x.querySelector('strong')?.textContent?.trim()||'',label:x.querySelector('span')?.textContent?.trim()||''}));
-  }
-  function currentProfileEntries(){
-    const p=$('#results .profile');if(!p||!data)return [];
-    const name=p.querySelector('.profile-name')?.textContent.trim()||'';
-    const kind=p.querySelector('.profile-kind')?.textContent.replace(' profile','').trim()||'Song';
-    const summary=p.querySelector('.profile-summary')?.textContent||'';
-    const artist=(summary.match(/\bby\s+(.+?)\s+—/)||[])[1]||'';
-    const n=norm(name),a=norm(artist);
-    return good(data).filter(e=>{
-      if(kind==='Artist')return (e.artists||[]).some(x=>norm(x)===n);
-      if(kind==='Album')return norm(e.album||e.albumName||e.release||e.releaseTitle)===n&&(!a||(e.artists||[]).some(x=>norm(x)===a));
-      return norm(e.title)===n&&(!a||(e.artists||[]).some(x=>norm(x)===a));
-    });
-  }
-  function profileVisual(){
-    const p=$('#results .profile');if(!p)return;
-    const key=p.querySelector('.profile-kind')?.textContent+'::'+p.querySelector('.profile-name')?.textContent;
-    if(key===lastProfile)return;lastProfile=key;
-    const rows=currentProfileEntries().sort((a,b)=>+a.rank-+b.rank);
-    if(!rows.length)return;
-    const old=p.querySelector('.sc-profile-viz');if(old)old.remove();
-    const max=Math.max(10,...rows.map(x=>+x.rank));
-    const unique=[];const seen=new Set();rows.forEach(x=>{if(!seen.has(x.source)){seen.add(x.source);unique.push(x)}});
-    const shown=unique.slice(0,10),scale=Math.max(max,10);
-    const section=d.createElement('section');section.className='sc-viz sc-profile-viz';
-    section.innerHTML=`<div class="sc-viz-head"><div><h3>Cross-chart performance</h3><p>Current positions across the tracked sources. #1 is the strongest position.</p></div><strong class="sc-viz-value">${shown.length} charts</strong></div><div class="sc-rank-bars">${shown.map(x=>{const pct=Math.max(8,100-(+x.rank-1)/Math.max(scale-1,1)*100);return `<div class="sc-rank-row"><span class="sc-rank-label" title="${esc(x.source)}">${esc(x.source)}</span><div class="sc-rank-track"><i class="sc-rank-fill" style="width:${pct.toFixed(1)}%"></i></div><b class="sc-rank-no">#${+x.rank}</b></div>`}).join('')}</div>`;
-    const stats=p.querySelector('.profile-stats');(stats?stats.parentNode:p).appendChild(section);
-  }
-  function movementVisual(){
-    const a=$('#analytics');if(!a||!data)return;
-    let host=a.querySelector('.sc-analytics-visuals');if(!host){host=d.createElement('div');host.className='sc-analytics-visuals';a.appendChild(host)}
-    const es=good(data),moves=es.map(e=>+e.movement).filter(Number.isFinite),ranks=es.map(e=>+e.rank);
-    const bins=[1,10,20,30,40,50,60,70,80,100],counts=bins.map((b,i)=>ranks.filter(r=>i===0?r<=b:r>bins[i-1]&&r<=b).length),mx=Math.max(...counts,1);
-    const movement=moves.length?{up:moves.filter(x=>x>0).reduce((a,b)=>a+b,0),down:moves.filter(x=>x<0).reduce((a,b)=>a+Math.abs(b),0)}:{up:0,down:0};
-    const recent=history?.map(x=>good(x).length)||[];
-    const w=760,h=210,pad=28,step=(w-pad*2)/Math.max(counts.length-1,1);
-    const pts=counts.map((v,i)=>`${pad+i*step},${h-38-(v/mx)*(h-72)}`).join(' ');
-    const area=`${pad},${h-38} ${pts} ${pad+(counts.length-1)*step},${h-38}`;
-    const trendPts=recent.length>1?recent.map((v,i)=>{const x=pad+i*(w-pad*2)/Math.max(recent.length-1,1),y=h-38-(v/Math.max(...recent,1))*(h-72);return `${x.toFixed(1)},${y.toFixed(1)}`}).join(' '):'';
-    host.innerHTML=`<div class="sc-viz-grid"><section class="sc-viz"><div class="sc-viz-head"><div><h3>Rank distribution</h3><p>Where the current dataset is concentrated by chart position.</p></div><strong class="sc-viz-value">${ranks.length}</strong></div><svg class="sc-mini-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Current rank distribution"><line class="sc-gridline" x1="${pad}" y1="${h-38}" x2="${w-pad}" y2="${h-38}"/><polygon class="sc-area" points="${area}"/><polyline class="sc-line" points="${pts}"/>${counts.map((v,i)=>`<circle class="sc-dot" cx="${pad+i*step}" cy="${h-38-(v/mx)*(h-72)}" r="3"><title>Ranks up to ${bins[i]}: ${v}</title></circle>`).join('')}<text class="sc-axis-text" x="${pad}" y="${h-16}">#1–${bins[0]}</text><text class="sc-axis-text" x="${w-pad}" y="${h-16}" text-anchor="end">#${bins[bins.length-1]}</text></svg></section><section class="sc-viz"><div class="sc-viz-head"><div><h3>Movement pulse</h3><p>Aggregate supplied movement values in the latest snapshot.</p></div><strong class="sc-viz-value">${moves.length} moves</strong></div><svg class="sc-mini-svg" viewBox="0 0 760 210" role="img" aria-label="Chart movement pulse"><line class="sc-gridline" x1="28" y1="170" x2="732" y2="170"/><rect x="150" y="${Math.max(20,170-Math.min(125,movement.up))}" width="150" height="${Math.min(125,movement.up)}" rx="10" fill="#7657ff"/><rect x="460" y="${Math.max(20,170-Math.min(125,movement.down))}" width="150" height="${Math.min(125,movement.down)}" rx="10" fill="#d9d9e3"/><text class="sc-axis-text" x="225" y="193" text-anchor="middle">Upward movement</text><text class="sc-axis-text" x="535" y="193" text-anchor="middle">Downward movement</text><text x="225" y="${Math.max(14,165-Math.min(125,movement.up))}" text-anchor="middle" font-size="13" font-weight="800" fill="#171722">${movement.up}</text><text x="535" y="${Math.max(14,165-Math.min(125,movement.down))}" text-anchor="middle" font-size="13" font-weight="800" fill="#171722">${movement.down}</text></svg><div class="sc-legend">Positive and negative movement are shown only when supplied by a source.</div></section>${trendPts?`<section class="sc-viz" style="grid-column:1/-1"><div class="sc-viz-head"><div><h3>Coverage trajectory</h3><p>Successful chart placements across committed snapshots.</p></div><strong class="sc-viz-value">${recent.length} snapshots</strong></div><svg class="sc-mini-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Coverage trajectory"><polyline class="sc-line" points="${trendPts}"/>${recent.map((v,i)=>{const x=pad+i*(w-pad*2)/Math.max(recent.length-1,1),y=h-38-(v/Math.max(...recent,1))*(h-72);return `<circle class="sc-dot" cx="${x}" cy="${y}" r="3"><title>${v} entries</title></circle>`}).join('')}</svg></section>`:''}</div>`;
-  }
-  async function init(){
-    style();
-    try{const r=await fetch('data/latest.json?visuals='+Date.now(),{cache:'no-store'});if(r.ok)data=await r.json();}catch(_){}
-    try{const r=await fetch('data/history/index.json?visuals='+Date.now(),{cache:'no-store'});if(r.ok){const dates=await r.json();const xs=await Promise.all(dates.map(async x=>{try{const q=await fetch('data/history/'+x+'.json?visuals='+Date.now(),{cache:'no-store'});return q.ok?await q.json():null}catch(_){return null}}));history=xs.filter(Boolean)}}catch(_){history=[]}
-    profileVisual();movementVisual();
-    const root=$('#results');if(root)new MutationObserver(()=>{profileVisual()}).observe(root,{childList:true,subtree:true});
-    const a=$('#analytics');if(a)new MutationObserver(()=>movementVisual()).observe(a,{childList:true,subtree:true});
-  }
+  function style(){if($('#stretto-visual-aids-css'))return;const s=d.createElement('style');s.id='stretto-visual-aids-css';s.textContent=`.sc-viz{background:#fff;border:1px solid #e4e4ed;border-radius:18px;padding:16px;box-shadow:0 6px 20px #24243b0b}.sc-viz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}.sc-viz-head h3{margin:0;font-size:14px;letter-spacing:-.02em;color:#171722}.sc-viz-head p{margin:4px 0 0;color:#717282;font-size:10px;line-height:1.45}.sc-viz-value{font-size:17px;font-weight:900;white-space:nowrap}.sc-profile-viz{margin-top:13px}.sc-rank-bars{display:grid;gap:9px}.sc-rank-row{display:grid;grid-template-columns:minmax(100px,1fr) 1.8fr 34px;gap:9px;align-items:center}.sc-rank-label{font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-rank-track{height:9px;background:#ececf3;border-radius:99px;overflow:hidden}.sc-rank-fill{display:block;height:100%;border-radius:99px;background:#7657ff}.sc-rank-no{text-align:right;font-size:11px;font-weight:900}.sc-viz-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.sc-mini-svg{display:block;width:100%;height:auto}.sc-gridline{stroke:#e9e9ef;stroke-width:1}.sc-area{fill:#7657ff1c;stroke:none}.sc-line{fill:none;stroke:#7657ff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.sc-dot{fill:#7657ff;stroke:#fff;stroke-width:2}.sc-axis-text{font-size:9px;fill:#717282}.sc-legend{margin-top:8px;color:#717282;font-size:9px}@media(max-width:700px){.sc-viz-grid{grid-template-columns:1fr}.sc-rank-row{grid-template-columns:82px 1fr 32px}.sc-viz{padding:14px}}`;d.head.appendChild(s)}
+  function currentProfileEntries(){const p=$('#results .profile');if(!p||!data)return[];const name=p.querySelector('.profile-name')?.textContent.trim()||'',kind=p.querySelector('.profile-kind')?.textContent.replace(' profile','').trim()||'Song',summary=p.querySelector('.profile-summary')?.textContent||'',artist=(summary.match(/\bby\s+(.+?)\s+—/)||[])[1]||'',n=norm(name),a=norm(artist);return good(data).filter(e=>kind==='Artist'?(e.artists||[]).some(x=>norm(x)===n):kind==='Album'?norm(e.album||e.albumName||e.release||e.releaseTitle)===n&&(!a||(e.artists||[]).some(x=>norm(x)===a)):norm(e.title)===n&&(!a||(e.artists||[]).some(x=>norm(x)===a)))}
+  function profileVisual(){const p=$('#results .profile');if(!p)return;const key=p.querySelector('.profile-kind')?.textContent+'::'+p.querySelector('.profile-name')?.textContent;if(key===lastProfile)return;lastProfile=key;const rows=currentProfileEntries().sort((a,b)=>+a.rank-+b.rank);if(!rows.length)return;const old=p.querySelector('.sc-profile-viz');if(old)old.remove();const max=Math.max(10,...rows.map(x=>+x.rank)),unique=[],seen=new Set();rows.forEach(x=>{if(!seen.has(x.source)){seen.add(x.source);unique.push(x)}});const shown=unique.slice(0,10),section=d.createElement('section');section.className='sc-viz sc-profile-viz';section.innerHTML=`<div class="sc-viz-head"><div><h3>Cross-chart performance</h3><p>Current positions across the tracked sources. #1 is the strongest position.</p></div><strong class="sc-viz-value">${shown.length} charts</strong></div><div class="sc-rank-bars">${shown.map(x=>{const pct=Math.max(8,100-(+x.rank-1)/Math.max(max-1,1)*100);return `<div class="sc-rank-row"><span class="sc-rank-label" title="${esc(x.source)}">${esc(x.source)}</span><div class="sc-rank-track"><i class="sc-rank-fill" style="width:${pct.toFixed(1)}%"></i></div><b class="sc-rank-no">#${+x.rank}</b></div>`}).join('')}</div>`;(p.querySelector('.profile-stats')||p).parentNode.appendChild(section)}
+  function movementVisual(){const a=$('#analytics');if(!a||!data)return;let host=a.querySelector('.sc-analytics-visuals');if(!host){host=d.createElement('div');host.className='sc-analytics-visuals';a.appendChild(host)}const es=good(data),moves=es.map(e=>+e.movement).filter(Number.isFinite),ranks=es.map(e=>+e.rank),bins=[1,10,20,30,40,50,60,70,80,100],counts=bins.map((b,i)=>ranks.filter(r=>i===0?r<=b:r>bins[i-1]&&r<=b).length),mx=Math.max(...counts,1),movement={up:moves.filter(x=>x>0).reduce((a,b)=>a+b,0),down:moves.filter(x=>x<0).reduce((a,b)=>a+Math.abs(b),0)},recent=history?.map(x=>good(x).length)||[],w=760,h=210,pad=28,step=(w-pad*2)/Math.max(counts.length-1,1),pts=counts.map((v,i)=>`${pad+i*step},${h-38-(v/mx)*(h-72)}`).join(' '),area=`${pad},${h-38} ${pts} ${pad+(counts.length-1)*step},${h-38}`,trendPts=recent.length>1?recent.map((v,i)=>{const x=pad+i*(w-pad*2)/Math.max(recent.length-1,1),y=h-38-(v/Math.max(...recent,1))*(h-72);return`${x.toFixed(1)},${y.toFixed(1)}`}).join(' '):'';host.innerHTML=`<div class="sc-viz-grid"><section class="sc-viz"><div class="sc-viz-head"><div><h3>Rank distribution</h3><p>Where the current dataset is concentrated by chart position.</p></div><strong class="sc-viz-value">${ranks.length}</strong></div><svg class="sc-mini-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Current rank distribution"><line class="sc-gridline" x1="${pad}" y1="${h-38}" x2="${w-pad}" y2="${h-38}"/><polygon class="sc-area" points="${area}"/><polyline class="sc-line" points="${pts}"/>${counts.map((v,i)=>`<circle class="sc-dot" cx="${pad+i*step}" cy="${h-38-(v/mx)*(h-72)}" r="3"><title>Ranks up to ${bins[i]}: ${v}</title></circle>`).join('')}<text class="sc-axis-text" x="${pad}" y="${h-16}">#1–${bins[0]}</text><text class="sc-axis-text" x="${w-pad}" y="${h-16}" text-anchor="end">#${bins[bins.length-1]}</text></svg></section><section class="sc-viz"><div class="sc-viz-head"><div><h3>Movement pulse</h3><p>Aggregate supplied movement values in the latest snapshot.</p></div><strong class="sc-viz-value">${moves.length} moves</strong></div><svg class="sc-mini-svg" viewBox="0 0 760 210" role="img" aria-label="Chart movement pulse"><line class="sc-gridline" x1="28" y1="170" x2="732" y2="170"/><rect x="150" y="${Math.max(20,170-Math.min(125,movement.up))}" width="150" height="${Math.min(125,movement.up)}" rx="10" fill="#7657ff"/><rect x="460" y="${Math.max(20,170-Math.min(125,movement.down))}" width="150" height="${Math.min(125,movement.down)}" rx="10" fill="#d9d9e3"/><text class="sc-axis-text" x="225" y="193" text-anchor="middle">Upward movement</text><text class="sc-axis-text" x="535" y="193" text-anchor="middle">Downward movement</text><text x="225" y="${Math.max(14,165-Math.min(125,movement.up))}" text-anchor="middle" font-size="13" font-weight="800" fill="#171722">${movement.up}</text><text x="535" y="${Math.max(14,165-Math.min(125,movement.down))}" text-anchor="middle" font-size="13" font-weight="800" fill="#171722">${movement.down}</text></svg><div class="sc-legend">Positive and negative movement are shown only when supplied by a source.</div></section>${trendPts?`<section class="sc-viz" style="grid-column:1/-1"><div class="sc-viz-head"><div><h3>Coverage trajectory</h3><p>Successful chart placements across committed snapshots.</p></div><strong class="sc-viz-value">${recent.length} snapshots</strong></div><svg class="sc-mini-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Coverage trajectory"><polyline class="sc-line" points="${trendPts}"/>${recent.map((v,i)=>{const x=pad+i*(w-pad*2)/Math.max(recent.length-1,1),y=h-38-(v/Math.max(...recent,1))*(h-72);return`<circle class="sc-dot" cx="${x}" cy="${y}" r="3"><title>${v} entries</title></circle>`}).join('')}</svg></section>`:''}</div>`}
+  async function init(){style();try{const r=await fetch('data/latest.json?visuals='+Date.now(),{cache:'no-store'});if(r.ok)data=await r.json()}catch(_){}try{const r=await fetch('data/history/index.json?visuals='+Date.now(),{cache:'no-store'});if(r.ok){const dates=await r.json(),xs=await Promise.all(dates.map(async x=>{try{const q=await fetch('data/history/'+x+'.json?visuals='+Date.now(),{cache:'no-store'});return q.ok?await q.json():null}catch(_){return null}}));history=xs.filter(Boolean)}}catch(_){history=[]}profileVisual();movementVisual();const root=$('#results');if(root)new MutationObserver(()=>profileVisual()).observe(root,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
