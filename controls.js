@@ -35,23 +35,22 @@
       .sc-profile-nav{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 18px}
       .sc-profile-nav a{color:#0071e3;text-decoration:none;font-size:12px;font-weight:600;padding:7px 10px;border-radius:999px;background:#f5f5f7}
       .sc-profile-nav a:hover{text-decoration:underline}
-      .sc-theme-wrap{position:absolute;top:24px;right:24px;z-index:5}
-      .sc-theme-toggle{appearance:none;border:1px solid #d2d2d7;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#1d1d1f;border-radius:999px;padding:9px 13px;display:inline-flex;align-items:center;gap:7px;font:600 12px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Arial,sans-serif;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
+      .sc-theme-wrap{position:fixed;top:16px;right:20px;z-index:2000}
+      .sc-theme-toggle{appearance:none;border:1px solid #d2d2d7;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#1d1d1f;border-radius:999px;padding:9px 13px;display:inline-flex;align-items:center;gap:7px;font:600 12px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Arial,sans-serif;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
       .sc-theme-toggle:hover{transform:translateY(-1px)}
       .sc-theme-icon{font-size:15px;line-height:1}
       .sc-theme-text{min-width:31px;text-align:left}
-      @media(max-width:700px){.sc-controlbar{align-items:flex-start}.sc-segmented{width:100%}.sc-segmented button{flex:1}.sc-profile-nav a{padding:8px 10px}.sc-theme-wrap{top:14px;right:14px}.sc-theme-text{display:none}.sc-theme-toggle{width:40px;height:40px;padding:0;justify-content:center}.sc-theme-icon{font-size:18px}}
+      @media(max-width:700px){.sc-controlbar{align-items:flex-start}.sc-segmented{width:100%}.sc-segmented button{flex:1}.sc-profile-nav a{padding:8px 10px}.sc-theme-wrap{top:12px;right:12px}.sc-theme-text{display:none}.sc-theme-toggle{width:40px;height:40px;padding:0;justify-content:center}.sc-theme-icon{font-size:18px}}
       @media(prefers-reduced-motion:reduce){.sc-segmented button,.sc-theme-toggle{transition:none}}
     `;
     d.head.appendChild(s);
   }
 
   function buildThemeToggle(){
-    const hero=$('.hero');if(!hero||$('#stretto-theme-toggle'))return;
-    if(getComputedStyle(hero).position==='static')hero.style.position='relative';
+    if($('#stretto-theme-toggle'))return;
     const wrap=d.createElement('div');wrap.className='sc-theme-wrap';
     wrap.innerHTML='<button id="stretto-theme-toggle" class="sc-theme-toggle" type="button" aria-pressed="false"><span class="sc-theme-icon" aria-hidden="true">☾</span><span class="sc-theme-text">Night</span></button>';
-    hero.appendChild(wrap);
+    d.body.appendChild(wrap);
     wrap.querySelector('button').addEventListener('click',()=>applyTheme(d.documentElement.dataset.theme==='dark'?'light':'dark',true));
     applyTheme(d.documentElement.dataset.theme||systemTheme(),false);
   }
