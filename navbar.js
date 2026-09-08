@@ -13,9 +13,11 @@
           <span class="sc-navbar-mark" aria-hidden="true">SC</span>
           <span>StrettoCharts</span>
         </a>
-        <button class="sc-navbar-toggle" type="button" aria-expanded="false" aria-controls="sc-navbar-menu" aria-label="Open navigation">
-          <span></span><span></span><span></span>
-        </button>
+        <div class="sc-navbar-mobile-actions">
+          <button class="sc-navbar-toggle" type="button" aria-expanded="false" aria-controls="sc-navbar-menu" aria-label="Open navigation">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
         <div class="sc-navbar-menu" id="sc-navbar-menu">
           <div class="sc-navbar-links">
             <a href="#top" data-section-link="top">Home</a>
@@ -47,7 +49,8 @@
       .sc-navbar-links a[aria-current="page"]{color:#171722;background:#eeeafc}
       .sc-navbar-primary{padding:9px 13px;border-radius:999px;color:#fff;text-decoration:none;font-size:12px;font-weight:850;background:linear-gradient(135deg,#ff3d81,#7657ff);box-shadow:0 7px 18px rgba(118,87,255,.22)}
       .sc-navbar-primary:hover,.sc-navbar-primary:focus-visible{filter:brightness(1.04)}
-      .sc-navbar-toggle{display:none;margin-left:auto;width:40px;height:40px;padding:9px;border:1px solid #e4e4ed;border-radius:12px;background:#fff;cursor:pointer}
+      .sc-navbar-mobile-actions{display:flex;align-items:center;gap:7px;margin-left:auto}
+      .sc-navbar-toggle{display:none;width:40px;height:40px;padding:9px;border:1px solid #e4e4ed;border-radius:12px;background:#fff;cursor:pointer}
       .sc-navbar-toggle span{display:block;height:2px;margin:4px 0;border-radius:2px;background:#171722}
       .sc-navbar a:focus-visible,.sc-navbar button:focus-visible{outline:3px solid rgba(118,87,255,.28);outline-offset:2px}
       body{scroll-behavior:smooth}
@@ -55,12 +58,16 @@
       @media(max-width:760px){
         .sc-navbar{padding:0 12px;margin-bottom:10px}
         .sc-navbar-inner{min-height:58px;padding:8px 10px;border-radius:17px;position:relative}
+        .sc-navbar-mobile-actions{margin-left:auto}
         .sc-navbar-toggle{display:block}
         .sc-navbar-menu{display:none;position:absolute;left:10px;right:10px;top:calc(100% + 8px);padding:9px;border:1px solid #e4e4ed;border-radius:17px;background:rgba(255,255,255,.96);box-shadow:0 18px 40px rgba(36,36,59,.13);flex-direction:column;align-items:stretch;gap:8px}
         .sc-navbar-menu.is-open{display:flex}
         .sc-navbar-links,.sc-navbar-actions{display:grid;grid-template-columns:1fr;gap:3px}
         .sc-navbar-links a,.sc-navbar-action,.sc-navbar-primary{text-align:left;padding:11px 12px;border-radius:11px}
         .sc-navbar-primary{text-align:center}
+        .sc-navbar-mobile-actions .sc-theme-wrap{display:flex!important;position:static!important}
+        .sc-navbar-mobile-actions .sc-theme-toggle{width:40px;height:40px;padding:0;justify-content:center}
+        .sc-navbar-mobile-actions .sc-theme-text{display:none}
       }
       @media(prefers-reduced-motion:reduce){body{scroll-behavior:auto}.sc-navbar-links a,.sc-navbar-action,.sc-navbar-primary{transition:none}}
     `;
@@ -68,6 +75,10 @@
 
     const toggle = nav.querySelector('.sc-navbar-toggle');
     const menu = nav.querySelector('.sc-navbar-menu');
+    const mobileActions = nav.querySelector('.sc-navbar-mobile-actions');
+    const themeWrap = document.querySelector('.sc-theme-wrap');
+    if (themeWrap && mobileActions) mobileActions.appendChild(themeWrap);
+
     const closeMenu = () => {
       menu.classList.remove('is-open');
       toggle.setAttribute('aria-expanded', 'false');
@@ -92,11 +103,8 @@
     const observer = new IntersectionObserver((entries) => {
       const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
       links.forEach((link) => link.removeAttribute('aria-current'));
-      if (visible) {
-        menu.querySelector(`[data-section-link="${visible.target.id}"]`)?.setAttribute('aria-current', 'page');
-      } else {
-        menu.querySelector('[data-section-link="top"]')?.setAttribute('aria-current', 'page');
-      }
+      if (visible) menu.querySelector(`[data-section-link="${visible.target.id}"]`)?.setAttribute('aria-current', 'page');
+      else menu.querySelector('[data-section-link="top"]')?.setAttribute('aria-current', 'page');
     }, { rootMargin: '-25% 0px -60% 0px', threshold: [0, .25, .5] });
 
     sections.forEach((id) => {
