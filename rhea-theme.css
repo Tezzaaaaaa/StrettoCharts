@@ -1,0 +1,234 @@
+/* StrettoCharts Rhea layout
+   Rhea-inspired density and organisation.
+   Preserves the existing StrettoCharts visual language.
+*/
+
+:root {
+  --rhea-radius: 18px;
+  --rhea-radius-sm: 12px;
+  --rhea-gap: 12px;
+  --rhea-section-gap: 56px;
+}
+
+/* Overall density */
+.wrap {
+  padding-bottom: 64px !important;
+}
+
+/* Hero: retain the existing identity, reduce excess vertical space */
+.hero {
+  padding-top: 72px !important;
+  padding-bottom: 60px !important;
+}
+
+/* Search controls */
+.searchbar {
+  gap: 8px !important;
+  margin-top: 24px !important;
+}
+
+.search,
+.confirm {
+  height: 52px !important;
+  border-radius: var(--rhea-radius-sm) !important;
+}
+
+.confirm {
+  padding-inline: 20px !important;
+}
+
+/* Metrics become a compact information surface */
+.metrics {
+  gap: 1px !important;
+  margin-bottom: 52px !important;
+  border-radius: var(--rhea-radius) !important;
+}
+
+.metric {
+  padding: 18px !important;
+}
+
+.metric:first-child {
+  border-radius: 17px 0 0 17px !important;
+}
+
+.metric:last-child {
+  border-radius: 0 17px 17px 0 !important;
+}
+
+.num {
+  font-size: 26px !important;
+}
+
+/* Sections */
+.section {
+  margin-top: var(--rhea-section-gap) !important;
+}
+
+.head {
+  margin-bottom: 16px !important;
+}
+
+.head h2 {
+  font-size: 28px !important;
+}
+
+/* Results */
+.results {
+  gap: var(--rhea-gap) !important;
+}
+
+/* Cards and panels */
+.chart-summary,
+.panel,
+.album-info,
+.search-results-panel,
+.analytics-panel,
+.source,
+.rank,
+.insight,
+.song {
+  border-radius: var(--rhea-radius) !important;
+}
+
+/* Standard card density */
+.chart-summary,
+.panel,
+.album-info {
+  padding: 20px !important;
+}
+
+.song {
+  padding: 14px !important;
+}
+
+.art {
+  border-radius: var(--rhea-radius-sm) !important;
+}
+
+.title {
+  font-size: 19px !important;
+}
+
+/* Profile */
+.profile {
+  border-radius: 24px !important;
+  padding: 28px !important;
+}
+
+.profile-top {
+  gap: 20px !important;
+}
+
+.profile-art {
+  width: 140px !important;
+  height: 140px !important;
+  border-radius: 18px !important;
+}
+
+.profile-name {
+  font-size: clamp(32px, 4.5vw, 54px) !important;
+}
+
+.profile-stats {
+  margin-top: 14px !important;
+}
+
+.profile-stat {
+  padding: 14px !important;
+}
+
+/* Dense chart lists */
+.charts {
+  gap: 1px !important;
+  border-radius: 15px !important;
+}
+
+.chart {
+  padding: 11px !important;
+}
+
+/* Analytics / ranking / coverage surfaces */
+.grid2,
+.grid3 {
+  gap: 12px !important;
+}
+
+.rankings,
+.coverage {
+  gap: 1px !important;
+  border-radius: var(--rhea-radius) !important;
+}
+
+.rank,
+.source {
+  padding: 18px !important;
+}
+
+/* Banners */
+.banner {
+  border-radius: 22px !important;
+  padding: 26px !important;
+}
+
+/* Empty / notice states */
+.empty {
+  border-radius: var(--rhea-radius) !important;
+  padding: 44px 20px !important;
+}
+
+.notice {
+  padding: 12px 14px !important;
+  border-radius: var(--rhea-radius-sm) !important;
+}
+
+/* Keep the leader rail compact */
+#results:not(:has(.profile)) {
+  grid-auto-columns: minmax(260px, 32%) !important;
+  gap: 12px !important;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .hero {
+    padding-top: 50px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .metrics {
+    margin-bottom: 40px !important;
+  }
+
+  .section {
+    margin-top: 42px !important;
+  }
+
+  .head h2 {
+    font-size: 25px !important;
+  }
+
+  .profile {
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  .profile-art {
+    width: 68px !important;
+    height: 68px !important;
+  }
+
+  .chart-summary,
+  .panel,
+  .album-info {
+    padding: 16px !important;
+  }
+
+  .rank,
+  .source {
+    padding: 16px !important;
+  }
+
+  #results:not(:has(.profile)) {
+    grid-auto-columns: minmax(245px, 80%) !important;
+  }
+}
