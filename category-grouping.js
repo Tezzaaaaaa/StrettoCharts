@@ -1,0 +1,1 @@
+/* Final dashboard category grouping is implemented by chart-categories.js. */
