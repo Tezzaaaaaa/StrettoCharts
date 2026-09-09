@@ -1,96 +1,23 @@
-/* StrettoCharts — unified layout system
-   Final pass: one content width, one spacing rhythm, and equal-height cards. */
-:root{
-  --sc-content-max:1480px;
-  --sc-gutter:20px;
-  --sc-section-gap:30px;
-  --sc-card-gap:13px;
-  --sc-radius:23px;
-  --sc-card-padding:20px;
-}
-
-/* One true page width and one horizontal alignment line. */
-.wrap{
-  width:min(100%,var(--sc-content-max));
-  max-width:var(--sc-content-max);
-  margin-inline:auto;
-  padding-inline:var(--sc-gutter);
-}
-
-/* Every major section occupies the exact same available width. */
-.section,
-.metrics,
-.hero{
-  width:100%;
-  max-width:none;
-}
-
-.section{margin-top:var(--sc-section-gap)}
-
-/* Section headings use the same vertical footprint. */
-.section>.head{
-  min-height:42px;
-  margin-inline:0;
-  align-items:flex-start;
-}
-
-/* All repeated card grids share the same gap and stretch their children. */
-.metrics,
-.results,
-.grid2,
-.grid3,
-.rankings,
-.coverage,
-.summary-grid{
-  width:100%;
-}
-
-.grid2,.grid3,.rankings,.coverage,.summary-grid{
-  align-items:stretch;
-}
-
-.grid2>* ,
-.grid3>* ,
-.rankings>* ,
-.coverage>* ,
-.summary-grid>*{
-  min-width:0;
-  height:100%;
-}
-
-/* One card geometry throughout the data UI. */
-.metric,.panel,.chart-summary,.rank,.source,.insight,.summary-item,.profile-stat,.song{
-  border-radius:var(--sc-radius);
-}
-
-.panel,.chart-summary,.rank,.source,.insight,.summary-item{
-  min-height:150px;
-}
-
-/* Prevent content-driven width changes inside rows. */
-.profile,.chart-summary,.song,.panel,.rank,.source,.insight,.empty,.banner{
-  width:100%;
-  min-width:0;
-}
-
-/* Equal visual rhythm inside chart lists. */
-.charts{gap:10px}
-.chart{min-height:64px}
-
-/* Keep the analytics/ranking/coverage rows visually balanced. */
-#analytics>.grid2,
-#analytics>.grid3,
-#analytics .grid2,
-#analytics .grid3{
-  align-items:stretch;
-}
-
-@media(max-width:1100px){
-  :root{--sc-gutter:16px}
-}
-
-@media(max-width:700px){
-  :root{--sc-gutter:12px;--sc-section-gap:24px;--sc-card-gap:10px}
-  .section>.head{min-height:0;margin-bottom:12px}
-  .panel,.chart-summary,.rank,.source,.insight,.summary-item{min-height:0}
-}
+/* StrettoCharts — final unified layout normalization.
+   Keep the existing visual design; normalize geometry, media, and text flow. */
+:root{--sc-content-max:1480px;--sc-gutter:20px;--sc-section-gap:28px;--sc-card-radius:20px;--sc-art-size:80px}
+*{box-sizing:border-box}
+.wrap{width:100%;max-width:var(--sc-content-max);margin:0 auto;padding:22px var(--sc-gutter) 70px}
+.hero,.metrics,.section,.footer{width:100%;max-width:none}.section{margin-top:var(--sc-section-gap)}
+.metrics,.grid2,.grid3,.rankings,.coverage,.summary-grid{align-items:stretch}
+.grid2>*,.grid3>*,.rankings>*,.coverage>*,.summary-grid>*{min-width:0}
+.metric,.panel,.chart-summary,.rank,.source,.insight,.summary-item,.profile-stat,.song,.empty{min-width:0}
+.metric,.panel,.chart-summary,.rank,.source,.insight,.summary-item,.song{border-radius:var(--sc-card-radius)}
+/* All artwork uses one fixed square slot; it cannot expand because of its source image or adjacent text. */
+.profile-art,.art{width:var(--sc-art-size)!important;height:var(--sc-art-size)!important;min-width:var(--sc-art-size)!important;min-height:var(--sc-art-size)!important;max-width:var(--sc-art-size)!important;max-height:var(--sc-art-size)!important;aspect-ratio:1/1;object-fit:cover;display:block}
+.profile-top{grid-template-columns:var(--sc-art-size) minmax(0,1fr) auto;gap:16px}.song{grid-template-columns:var(--sc-art-size) minmax(0,1fr);gap:16px}
+/* Let real words wrap. Do not force ellipses or nowrap on labels. */
+.profile-name,.title,.source-name,.barlabel,.chart-meta,.artists,.profile-summary,.panel,.chart-summary,.rank,.source,.insight,.summary-item,.metric,.profile-stat{overflow-wrap:anywhere;word-break:normal}
+.source-name,.barlabel{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+.topline{align-items:flex-start;min-width:0}.topline>*{min-width:0}.title{line-height:1.2}.profile-name{line-height:1.1}.head h2{line-height:1.15}.head p{line-height:1.45;max-width:900px}
+.chart{grid-template-columns:minmax(0,1fr) 42px 88px minmax(110px,150px);min-width:0;min-height:64px}.chart>*{min-width:0}.chart-meta{white-space:normal!important}
+.metric,.summary-item,.rank,.source,.insight,.profile-stat{text-align:center}
+.metric .num,.metric .label,.summary-item strong,.summary-item span,.rank h3,.rank p,.rank small,.source b,.source small,.insight strong,.insight span,.profile-stat strong,.profile-stat span{max-width:100%}
+.grid2{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr)}.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}.rankings,.coverage{grid-template-columns:repeat(3,minmax(0,1fr))}.summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1100px){:root{--sc-gutter:16px}.grid2,.grid3{grid-template-columns:1fr}.rankings,.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-top{grid-template-columns:var(--sc-art-size) minmax(0,1fr)}.profile-actions{grid-column:1/-1;width:max-content}}
+@media(max-width:700px){:root{--sc-gutter:12px;--sc-section-gap:24px;--sc-art-size:64px}.wrap{padding:12px var(--sc-gutter) 50px}.hero{padding:27px 20px}.metrics{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:span 2}.rankings,.coverage,.summary-grid{grid-template-columns:1fr}.profile-top{grid-template-columns:var(--sc-art-size) minmax(0,1fr);gap:12px}.song{grid-template-columns:var(--sc-art-size) minmax(0,1fr);gap:12px}.chart{grid-template-columns:minmax(0,1fr) 38px 72px}.chart-meta{grid-column:1/-1;text-align:left;padding-top:6px;border-top:1px solid #e9e9f0}.head{display:block}.head h2{font-size:21px}}
