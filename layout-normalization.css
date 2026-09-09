@@ -1,0 +1,96 @@
+/* StrettoCharts — unified layout system
+   Final pass: one content width, one spacing rhythm, and equal-height cards. */
+:root{
+  --sc-content-max:1480px;
+  --sc-gutter:20px;
+  --sc-section-gap:30px;
+  --sc-card-gap:13px;
+  --sc-radius:23px;
+  --sc-card-padding:20px;
+}
+
+/* One true page width and one horizontal alignment line. */
+.wrap{
+  width:min(100%,var(--sc-content-max));
+  max-width:var(--sc-content-max);
+  margin-inline:auto;
+  padding-inline:var(--sc-gutter);
+}
+
+/* Every major section occupies the exact same available width. */
+.section,
+.metrics,
+.hero{
+  width:100%;
+  max-width:none;
+}
+
+.section{margin-top:var(--sc-section-gap)}
+
+/* Section headings use the same vertical footprint. */
+.section>.head{
+  min-height:42px;
+  margin-inline:0;
+  align-items:flex-start;
+}
+
+/* All repeated card grids share the same gap and stretch their children. */
+.metrics,
+.results,
+.grid2,
+.grid3,
+.rankings,
+.coverage,
+.summary-grid{
+  width:100%;
+}
+
+.grid2,.grid3,.rankings,.coverage,.summary-grid{
+  align-items:stretch;
+}
+
+.grid2>* ,
+.grid3>* ,
+.rankings>* ,
+.coverage>* ,
+.summary-grid>*{
+  min-width:0;
+  height:100%;
+}
+
+/* One card geometry throughout the data UI. */
+.metric,.panel,.chart-summary,.rank,.source,.insight,.summary-item,.profile-stat,.song{
+  border-radius:var(--sc-radius);
+}
+
+.panel,.chart-summary,.rank,.source,.insight,.summary-item{
+  min-height:150px;
+}
+
+/* Prevent content-driven width changes inside rows. */
+.profile,.chart-summary,.song,.panel,.rank,.source,.insight,.empty,.banner{
+  width:100%;
+  min-width:0;
+}
+
+/* Equal visual rhythm inside chart lists. */
+.charts{gap:10px}
+.chart{min-height:64px}
+
+/* Keep the analytics/ranking/coverage rows visually balanced. */
+#analytics>.grid2,
+#analytics>.grid3,
+#analytics .grid2,
+#analytics .grid3{
+  align-items:stretch;
+}
+
+@media(max-width:1100px){
+  :root{--sc-gutter:16px}
+}
+
+@media(max-width:700px){
+  :root{--sc-gutter:12px;--sc-section-gap:24px;--sc-card-gap:10px}
+  .section>.head{min-height:0;margin-bottom:12px}
+  .panel,.chart-summary,.rank,.source,.insight,.summary-item{min-height:0}
+}
