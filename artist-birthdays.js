@@ -4,6 +4,8 @@
   const ENDPOINT='https://query.wikidata.org/sparql';
   const CACHE='strettocharts-birthday-v1';
   const occupations=['wd:Q639669','wd:Q177220','wd:Q2252262','wd:Q488205','wd:Q36834','wd:Q855091'];
+  let tiltFrame=0;
+  const tiltCards=new Set();
 
   function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
   function today(){const now=new Date();return {month:now.getMonth()+1,day:now.getDate(),date:now};}
@@ -39,6 +41,44 @@
     try{sessionStorage.setItem(key,JSON.stringify({rows,at:Date.now()}))}catch(_){}
     return rows;
   }
+  function queueTilt(){
+    if(tiltFrame)return;
+    tiltFrame=requestAnimationFrame(()=>{tiltFrame=0;tiltCards.forEach(updateTilt);});
+  }
+  function updateTilt(card){
+    const current=card._abTilt;
+    if(!current)return;
+    current.x+=(current.targetX-current.x)*.1;
+    current.y+=(current.targetY-current.y)*.1;
+    current.bgX+=(current.targetBgX-current.bgX)*.1;
+    current.bgY+=(current.targetBgY-current.bgY)*.1;
+    card.style.setProperty('--ab-rot-x',`${current.y.toFixed(2)}deg`);
+    card.style.setProperty('--ab-rot-y',`${current.x.toFixed(2)}deg`);
+    card.style.setProperty('--ab-bg-x',`${current.bgX.toFixed(2)}%`);
+    card.style.setProperty('--ab-bg-y',`${current.bgY.toFixed(2)}%`);
+    if(Math.abs(current.targetX-current.x)>.01||Math.abs(current.targetY-current.y)>.01||Math.abs(current.targetBgX-current.bgX)>.01||Math.abs(current.targetBgY-current.bgY)>.01)queueTilt();
+  }
+  function addTilt(card){
+    if(card._abTilt)return;
+    const state=card._abTilt={x:0,y:0,bgX:0,bgY:0,targetX:0,targetY:0,targetBgX:0,targetBgY:0};
+    const move=(event)=>{
+      const rect=card.getBoundingClientRect();
+      const px=(event.clientX-rect.left)/rect.width-.5;
+      const py=(event.clientY-rect.top)/rect.height-.5;
+      state.targetX=px*14;
+      state.targetY=-py*14;
+      state.targetBgX=-px*9;
+      state.targetBgY=-py*9;
+      tiltCards.add(card);queueTilt();
+    };
+    const leave=()=>{
+      state.targetX=0;state.targetY=0;state.targetBgX=0;state.targetBgY=0;
+      tiltCards.add(card);queueTilt();
+    };
+    card.addEventListener('pointermove',move);
+    card.addEventListener('pointerleave',leave);
+    card.addEventListener('focus',()=>{state.targetX=0;state.targetY=0;state.targetBgX=0;state.targetBgY=0;tiltCards.add(card);queueTilt();});
+  }
   function render(rows){
     const host=mount();if(!host)return;
     const {date}=today();
@@ -50,6 +90,7 @@
       const a=age(x.birth),meta=a?`Born ${new Intl.DateTimeFormat(undefined,{year:'numeric'}).format(new Date(x.birth))} · ${a} today`:'';
       return `<a class="ab-card" href="${esc(x.uri)}" target="_blank" rel="noopener" aria-label="Open ${esc(x.name)} on Wikidata"><div class="ab-art">${x.image?`<img src="${esc(x.image)}" alt="" loading="lazy">`:'<span>♪</span>'}</div><div class="ab-copy"><span class="ab-index">${String(i+1).padStart(2,'0')}</span><h3>${esc(x.name)}</h3><p>${esc(x.description||'Music artist')}</p><small>${esc(meta||'Birthday today')}</small></div><span class="ab-link" aria-hidden="true">↗</span></a>`;
     }).join('');
+    content.querySelectorAll('.ab-card').forEach(addTilt);
   }
   async function start(){
     mount();
