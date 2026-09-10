@@ -15,7 +15,7 @@
     if(!anchor)return null;
     const s=d.createElement('section');s.id='artist-birthdays';s.className='artist-birthdays';
     s.innerHTML='<div class="ab-head"><div><span class="ab-kicker">TODAY IN MUSIC</span><h2>Birthday shoutouts</h2><p id="ab-date">Today’s artists and musicians.</p></div><div class="ab-count" id="ab-count">—</div></div><div id="ab-content" class="ab-content"><div class="ab-loading">Finding today’s music birthdays…</div></div><details class="ab-about"><summary>About this feature</summary><div class="ab-explain"><strong>What it is</strong><span>A daily celebration of artists and musicians whose verified birth date falls on today’s calendar date.</span><strong>Why it matters</strong><span>It adds a human, historical layer to the live charts — connecting the music being measured today with the people who shaped music across generations.</span><strong>How it is selected</strong><span>StrettoCharts queries Wikidata for people classified in music-related occupations and filters their verified birth dates to today’s month and day. Multiple birthday artists can be featured.</span><strong>Source</strong><span>Wikidata. Birth dates and artist classifications can be community-maintained and may change as records are corrected.</span></div></details>';
-    if(anchor.id==='artist-spotlight')anchor.insertAdjacentElement('afterend',s);else anchor.insertAdjacentElement('afterend',s);
+    anchor.insertAdjacentElement('afterend',s);
     return s;
   }
   function query(month,day){
@@ -48,7 +48,7 @@
     if(!rows.length){content.innerHTML='<div class="ab-empty"><strong>No verified music birthdays returned for today.</strong><span>StrettoCharts will check again tomorrow. The source is deliberately conservative rather than guessing a birth date.</span></div>';return;}
     content.innerHTML=rows.slice(0,8).map((x,i)=>{
       const a=age(x.birth),meta=a?`Born ${new Intl.DateTimeFormat(undefined,{year:'numeric'}).format(new Date(x.birth))} · ${a} today`:'';
-      return `<article class="ab-card"><div class="ab-art">${x.image?`<img src="${esc(x.image)}" alt="" loading="lazy">`:'<span>♪</span>'}</div><div class="ab-copy"><span class="ab-index">${String(i+1).padStart(2,'0')}</span><h3>${esc(x.name)}</h3><p>${esc(x.description||'Music artist')}</p><small>${esc(meta||'Birthday today')}</small></div><a class="ab-link" href="${esc(x.uri)}" target="_blank" rel="noopener" aria-label="Open ${esc(x.name)} on Wikidata">↗</a></article>`;
+      return `<a class="ab-card" href="${esc(x.uri)}" target="_blank" rel="noopener" aria-label="Open ${esc(x.name)} on Wikidata"><div class="ab-art">${x.image?`<img src="${esc(x.image)}" alt="" loading="lazy">`:'<span>♪</span>'}</div><div class="ab-copy"><span class="ab-index">${String(i+1).padStart(2,'0')}</span><h3>${esc(x.name)}</h3><p>${esc(x.description||'Music artist')}</p><small>${esc(meta||'Birthday today')}</small></div><span class="ab-link" aria-hidden="true">↗</span></a>`;
     }).join('');
   }
   async function start(){
