@@ -1,111 +1,77 @@
 # StrettoCharts
 
-Automated music-chart updater, historical archive and source-aware chart intelligence dashboard.
+Automated music-chart updater, historical archive and source-aware chart search.
 
 ## Live dashboard
 
 **[Open the StrettoCharts live dashboard](https://tezzaaaaaa.github.io/StrettoCharts/)**
 
-The dashboard is a Svelte application using Bits UI for accessible interaction primitives. It reads the committed `data/latest.json` and `data/history/` snapshots rather than inventing a separate dataset.
+StrettoCharts is a lightweight, dependency-free HTML/CSS/JavaScript dashboard backed by the committed chart dataset. The current product is intentionally search-first rather than a large analytics dashboard.
 
-## Profile-first experience
+## Current experience
 
-Searching an artist, song, album or related media now produces a profile-style summary before the deeper analytics:
+The page has one primary job: let a user search for an artist, song or album and see the chart performance that is actually present in the tracked data.
 
-- automatically generated chart summary from the matched source rows
-- best current position
-- source coverage
-- chart longevity
-- movement interpretation
-- matched songs for an artist
-- album, genre, release-year and artwork metadata when a strong external media match is available
-- separate presentation of external metadata so it is never confused with chart-source facts
+1. **Search** — search the local chart database from the main hero.
+2. **Result selection** — autocomplete and fuzzy matching help identify the intended artist, song or album.
+3. **Profile** — the selected result becomes a focused profile showing its current chart placements.
+4. **Chart performance** — placements remain source-specific, with rank, movement, peak, weeks and chart date shown only when supplied by the source.
+5. **Album context** — album searches can show matching track information when it exists in the data.
+6. **Theme** — the fixed Day/Night control changes the display without introducing a separate theme system.
 
-The summary is deliberately factual. If the dataset does not contain a field, StrettoCharts does not manufacture it.
+There are no separate dashboard sections for chart analytics, music-history charts, consumption charts, editorial modules, visual-aid demos or other legacy feature collections. Those were removed from the active product structure so the interface stays focused.
 
-## Dashboard layout
+## Repository structure
 
-The interface uses Bits UI primitives where they provide meaningful interaction structure:
+```text
+StrettoCharts/
+├── index.html                 # GitHub Pages entry point
+├── dashboard.html             # Search-first application UI
+├── search-enhancements.js     # Local search, matching and result rendering
+├── controls.js                # Theme/display controls
+├── package.json               # Minimal updater command
+├── scripts/
+│   └── update.mjs             # Chart-source update pipeline
+├── data/
+│   ├── latest.json            # Current committed chart snapshot
+│   └── history/               # Date-stamped historical snapshots
+└── .github/workflows/
+    ├── pages.yml              # GitHub Pages deployment
+    └── update.yml             # Scheduled/manual data updates
+```
 
-- Tabs for Overview, Chart performance, and Sources & data
-- Progress for loading state
-- expandable/structured interaction primitives can be added without replacing the visual system because Bits UI is headless and styling remains controlled by StrettoCharts
+The repository deliberately does not retain old presentation layers or competing implementations. UI behaviour that belongs to the current dashboard lives in the two active browser scripts; chart collection and persistence live in the updater.
 
-The visual language uses large profile cards, editorial-style metadata blocks, responsive analytics panels, source-aware bars, movement indicators and compact ranking visuals rather than a generic admin dashboard.
+## Chart data
 
-## Chart interpretation
+Current chart sources are stored in `data/latest.json` and historical snapshots are stored under `data/history/`.
 
-StrettoCharts keeps chart methodologies separate. Current rank, previous rank, movement, peak rank and weeks-on-chart are interpreted only from fields supplied by each source.
+The dashboard keeps sources separate. It does not create an unofficial combined chart position from different methodologies, and it does not manufacture missing values.
 
-Movement rules:
-
-- positive movement means the numerical rank improved, e.g. #10 → #6
-- negative movement means the numerical rank worsened, e.g. #6 → #10
-- `null` movement is not treated as a decline
-- an explicit `movementLabel` from the source is preferred
-
-Cross-source analytical scores normalize rank against each source's published entry count. These scores are explicitly StrettoCharts-derived and are not official chart rankings.
-
-## Current chart coverage
-
-### Streaming platforms
-
-- Spotify Global Daily
-- Spotify Global Viral 50
-- Apple Music Global Top 100
-- Apple Music Australia Top 100
-- YouTube Global Top Songs Daily
-- YouTube Global Top Songs Weekly
-- YouTube Global Top Artists Weekly
-- Deezer Global Top Tracks
-- Shazam US Top 200
-
-### Official / industry charts
-
-- ARIA Top 50 Singles (Australia)
-- Official UK Singles Top 100
-- Billboard Hot 100
-- Billboard Global 200
-
-## Historical archive
-
-Daily snapshots are stored under `data/history/` and indexed by `data/history/index.json`.
-
-The dashboard refuses to fabricate a historical trend line when fewer than two dated snapshots exist. Once real snapshots accumulate, the same source-aware interpretation can be applied to historical charts.
+Movement follows the source data where available. When calculated from ranks, a lower numerical rank is treated as an improvement (for example, #10 → #6).
 
 ## Automation
 
-GitHub Actions runs the updater hourly and can also be started manually. It commits `data/latest.json` and new/changed history files only when data changes.
+GitHub Actions runs the updater on schedule and can also be started manually. The updater writes the current snapshot and date-stamped history only when the source data changes.
 
-The Pages workflow builds the Svelte/Vite application and publishes the generated `dist/` directory.
+GitHub Pages publishes the repository directly. No Svelte, Vite build, component framework or frontend dependency is required by the current dashboard.
 
-## Local development
+## Development
 
 Requires Node.js 22+.
 
-```bash
-npm install
-npm run dev
-```
-
-Build the production dashboard with:
-
-```bash
-npm run build
-```
-
-Run the chart-data updater with:
+Install the repository and run the data updater with:
 
 ```bash
 npm run update
 ```
 
+The dashboard itself is static and can be opened through GitHub Pages or served by any simple static HTTP server.
+
 ## Reliability rules
 
-- Each chart source fails independently.
-- Failed sources remain visible as source-health information.
-- Missing values are represented as `null`; the updater and dashboard do not fabricate chart statistics.
-- Chart movement is matched by normalized title + artist combination.
-- Historical files are date-stamped.
-- Platform charts and industry charts remain identifiable as separate sources.
-- External media metadata is only displayed after a strong title/artist match.
+- Each chart source is handled independently.
+- Missing values remain missing; StrettoCharts does not fabricate statistics.
+- Platform and industry charts remain identifiable as separate sources.
+- Historical snapshots are date-stamped.
+- Search results are derived from the committed chart data, with external media metadata used only as supporting context when a strong match is available.
