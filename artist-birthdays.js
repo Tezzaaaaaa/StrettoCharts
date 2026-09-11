@@ -1,101 +1,16 @@
 /* Daily artist birthday shoutouts powered by Wikidata. */
 (function(){
-  const d=document;
-  const ENDPOINT='https://query.wikidata.org/sparql';
-  const CACHE='strettocharts-birthday-v1';
+  const d=document,ENDPOINT='https://query.wikidata.org/sparql',CACHE='strettocharts-birthday-v1';
   const occupations=['wd:Q639669','wd:Q177220','wd:Q2252262','wd:Q488205','wd:Q36834','wd:Q855091'];
-  let tiltFrame=0;
-  const tiltCards=new Set();
-
-  function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-  function today(){const now=new Date();return {month:now.getMonth()+1,day:now.getDate(),date:now};}
-  function age(birth){if(!birth)return null;const b=new Date(birth),t=new Date();let n=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))n--;return n>0?n:null;}
-  function dateLabel(date){return new Intl.DateTimeFormat(undefined,{month:'long',day:'numeric'}).format(date);}
-  function mount(){
-    if(d.querySelector('#artist-birthdays'))return d.querySelector('#artist-birthdays');
-    const anchor=d.querySelector('#artist-spotlight')||d.querySelector('.hero');
-    if(!anchor)return null;
-    const s=d.createElement('section');s.id='artist-birthdays';s.className='artist-birthdays';
-    s.innerHTML='<div class="ab-head"><div><span class="ab-kicker">TODAY IN MUSIC</span><h2>Birthday shoutouts</h2><p id="ab-date">Today’s artists and musicians.</p></div><div class="ab-count" id="ab-count">—</div></div><div id="ab-content" class="ab-content"><div class="ab-loading">Finding today’s music birthdays…</div></div><details class="ab-about"><summary>About this feature</summary><div class="ab-explain"><strong>What it is</strong><span>A daily celebration of artists and musicians whose verified birth date falls on today’s calendar date.</span><strong>Why it matters</strong><span>It adds a human, historical layer to the live charts — connecting the music being measured today with the people who shaped music across generations.</span><strong>How it is selected</strong><span>StrettoCharts queries Wikidata for people classified in music-related occupations and filters their verified birth dates to today’s month and day. Multiple birthday artists can be featured.</span><strong>Source</strong><span>Wikidata. Birth dates and artist classifications can be community-maintained and may change as records are corrected.</span></div></details>';
-    anchor.insertAdjacentElement('afterend',s);
-    return s;
-  }
-  function query(month,day){
-    const values=occupations.join(' ');
-    return `SELECT DISTINCT ?person ?personLabel ?birth ?image ?description WHERE { ?person wdt:P569 ?birth. VALUES ?occupation { ${values} } ?person wdt:P106 ?occupation. FILTER(MONTH(?birth)=${month} && DAY(?birth)=${day}) OPTIONAL { ?person wdt:P18 ?image. } OPTIONAL { ?person schema:description ?description. FILTER(LANG(?description)="en") } SERVICE wikibase:label { bd:serviceParam wikibase:language "en". } } LIMIT 36`;
-  }
-  async function fetchBirthdays(){
-    const {month,day}=today();
-    const key=`${CACHE}:${month}-${day}`;
-    try{
-      const cached=JSON.parse(sessionStorage.getItem(key)||'null');
-      if(cached&&Array.isArray(cached.rows))return cached.rows;
-    }catch(_){}
-    const url=ENDPOINT+'?format=json&query='+encodeURIComponent(query(month,day));
-    const res=await fetch(url,{headers:{Accept:'application/sparql-results+json'}});
-    if(!res.ok)throw new Error('Birthday lookup failed');
-    const json=await res.json();
-    const rows=(json.results?.bindings||[]).map(r=>({
-      name:r.personLabel?.value||'',birth:r.birth?.value||'',image:r.image?.value||'',description:r.description?.value||'',uri:r.person?.value||''
-    })).filter(x=>x.name).sort((a,b)=>(b.image?1:0)-(a.image?1:0)||a.name.localeCompare(b.name));
-    try{sessionStorage.setItem(key,JSON.stringify({rows,at:Date.now()}))}catch(_){}
-    return rows;
-  }
-  function queueTilt(){
-    if(tiltFrame)return;
-    tiltFrame=requestAnimationFrame(()=>{tiltFrame=0;tiltCards.forEach(updateTilt);});
-  }
-  function updateTilt(card){
-    const current=card._abTilt;
-    if(!current)return;
-    current.x+=(current.targetX-current.x)*.1;
-    current.y+=(current.targetY-current.y)*.1;
-    current.bgX+=(current.targetBgX-current.bgX)*.1;
-    current.bgY+=(current.targetBgY-current.bgY)*.1;
-    card.style.setProperty('--ab-rot-x',`${current.y.toFixed(2)}deg`);
-    card.style.setProperty('--ab-rot-y',`${current.x.toFixed(2)}deg`);
-    card.style.setProperty('--ab-bg-x',`${current.bgX.toFixed(2)}%`);
-    card.style.setProperty('--ab-bg-y',`${current.bgY.toFixed(2)}%`);
-    if(Math.abs(current.targetX-current.x)>.01||Math.abs(current.targetY-current.y)>.01||Math.abs(current.targetBgX-current.bgX)>.01||Math.abs(current.targetBgY-current.bgY)>.01)queueTilt();
-  }
-  function addTilt(card){
-    if(card._abTilt)return;
-    const state=card._abTilt={x:0,y:0,bgX:0,bgY:0,targetX:0,targetY:0,targetBgX:0,targetBgY:0};
-    const move=(event)=>{
-      const rect=card.getBoundingClientRect();
-      const px=(event.clientX-rect.left)/rect.width-.5;
-      const py=(event.clientY-rect.top)/rect.height-.5;
-      state.targetX=px*14;
-      state.targetY=-py*14;
-      state.targetBgX=-px*9;
-      state.targetBgY=-py*9;
-      tiltCards.add(card);queueTilt();
-    };
-    const leave=()=>{
-      state.targetX=0;state.targetY=0;state.targetBgX=0;state.targetBgY=0;
-      tiltCards.add(card);queueTilt();
-    };
-    card.addEventListener('pointermove',move);
-    card.addEventListener('pointerleave',leave);
-    card.addEventListener('focus',()=>{state.targetX=0;state.targetY=0;state.targetBgX=0;state.targetBgY=0;tiltCards.add(card);queueTilt();});
-  }
-  function render(rows){
-    const host=mount();if(!host)return;
-    const {date}=today();
-    d.querySelector('#ab-date').textContent=`${dateLabel(date)} — celebrating artists whose birthdays fall today.`;
-    d.querySelector('#ab-count').textContent=rows.length?`${rows.length} ${rows.length===1?'artist':'artists'}`:'TODAY';
-    const content=d.querySelector('#ab-content');
-    if(!rows.length){content.innerHTML='<div class="ab-empty"><strong>No verified music birthdays returned for today.</strong><span>StrettoCharts will check again tomorrow. The source is deliberately conservative rather than guessing a birth date.</span></div>';return;}
-    content.innerHTML=rows.slice(0,8).map((x,i)=>{
-      const a=age(x.birth),meta=a?`Born ${new Intl.DateTimeFormat(undefined,{year:'numeric'}).format(new Date(x.birth))} · ${a} today`:'';
-      return `<a class="ab-card" href="${esc(x.uri)}" target="_blank" rel="noopener" aria-label="Open ${esc(x.name)} on Wikidata"><div class="ab-art">${x.image?`<img src="${esc(x.image)}" alt="" loading="lazy">`:'<span>♪</span>'}</div><div class="ab-copy"><span class="ab-index">${String(i+1).padStart(2,'0')}</span><h3>${esc(x.name)}</h3><p>${esc(x.description||'Music artist')}</p><small>${esc(meta||'Birthday today')}</small></div><span class="ab-link" aria-hidden="true">↗</span></a>`;
-    }).join('');
-    content.querySelectorAll('.ab-card').forEach(addTilt);
-  }
-  async function start(){
-    mount();
-    try{render(await fetchBirthdays())}
-    catch(_){const content=d.querySelector('#ab-content');if(content)content.innerHTML='<div class="ab-empty"><strong>Birthday data is temporarily unavailable.</strong><span>The daily feature uses Wikidata and will retry on the next page load.</span></div>';}
-  }
+  let rows=[],index=0;
+  const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const today=()=>{const date=new Date();return{month:date.getMonth()+1,day:date.getDate(),date};};
+  const age=birth=>{if(!birth)return null;const b=new Date(birth),t=new Date();let n=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))n--;return n>0?n:null;};
+  function mount(){if(d.querySelector('#artist-birthdays'))return d.querySelector('#artist-birthdays');const anchor=d.querySelector('#artist-spotlight')||d.querySelector('.hero');if(!anchor)return null;const s=d.createElement('section');s.id='artist-birthdays';s.className='artist-birthdays';s.innerHTML='<div class="ab-head"><div><span class="ab-kicker">TODAY IN MUSIC</span><h2>Birthday shoutouts</h2><p id="ab-date">Today’s artists and musicians.</p></div><div class="ab-count" id="ab-count">—</div></div><div id="ab-content" class="ab-content"><div class="ab-loading">Finding today’s music birthdays…</div></div><details class="ab-about"><summary>About this feature</summary><div class="ab-explain"><strong>What it is</strong><span>A daily celebration of artists and musicians whose verified birth date falls on today’s calendar date.</span><strong>How it is selected</strong><span>StrettoCharts queries Wikidata for people classified in music-related occupations and filters verified birth dates to today’s month and day.</span><strong>Source</strong><span>Wikidata records can change as corrections are made.</span></div></details>';anchor.insertAdjacentElement('afterend',s);return s;}
+  function query(month,day){return `SELECT DISTINCT ?person ?personLabel ?birth ?image ?description WHERE { ?person wdt:P569 ?birth. VALUES ?occupation { ${occupations.join(' ')} } ?person wdt:P106 ?occupation. FILTER(MONTH(?birth)=${month} && DAY(?birth)=${day}) OPTIONAL { ?person wdt:P18 ?image. } OPTIONAL { ?person schema:description ?description. FILTER(LANG(?description)="en") } SERVICE wikibase:label { bd:serviceParam wikibase:language "en". } } LIMIT 36`;}
+  async function fetchBirthdays(){const {month,day}=today(),key=`${CACHE}:${month}-${day}`;try{const cached=JSON.parse(sessionStorage.getItem(key)||'null');if(cached&&Array.isArray(cached.rows))return cached.rows;}catch(_){}const res=await fetch(ENDPOINT+'?format=json&query='+encodeURIComponent(query(month,day)),{headers:{Accept:'application/sparql-results+json'}});if(!res.ok)throw Error('Birthday lookup failed');const json=await res.json();const result=(json.results?.bindings||[]).map(r=>({name:r.personLabel?.value||'',birth:r.birth?.value||'',image:r.image?.value||'',description:r.description?.value||'',uri:r.person?.value||''})).filter(x=>x.name).sort((a,b)=>(b.image?1:0)-(a.image?1:0)||a.name.localeCompare(b.name));try{sessionStorage.setItem(key,JSON.stringify({rows:result,at:Date.now()}));}catch(_){}return result;}
+  function render(){const host=mount();if(!host)return;const {date}=today();d.querySelector('#ab-date').textContent=`${new Intl.DateTimeFormat(undefined,{month:'long',day:'numeric'}).format(date)} — celebrating artists whose birthdays fall today.`;d.querySelector('#ab-count').textContent=rows.length?`${rows.length} ${rows.length===1?'artist':'artists'}`:'TODAY';const content=d.querySelector('#ab-content');if(!rows.length){content.innerHTML='<div class="ab-empty"><strong>No verified music birthdays returned for today.</strong><span>StrettoCharts will check again tomorrow.</span></div>';return;}content.innerHTML='<div class="ab-stage" aria-live="polite">'+rows.slice(0,8).map((x,i)=>{const a=age(x.birth),meta=a?`Born ${new Date(x.birth).getFullYear()} · ${a} today`:'Birthday today';return `<a class="ab-card" data-position="${i===index?'current':i===(index-1+Math.min(rows.length,8))%Math.min(rows.length,8)?'previous':i===(index+1)%Math.min(rows.length,8)?'next':'hidden'}" href="${esc(x.uri)}" target="_blank" rel="noopener" aria-label="Open ${esc(x.name)} on Wikidata"><div class="ab-art">${x.image?`<img src="${esc(x.image)}" alt="" loading="lazy">`:'<span>♪</span>'}</div><div class="ab-copy"><span class="ab-index">${String(i+1).padStart(2,'0')}</span><h3>${esc(x.name)}</h3><p>${esc(x.description||'Music artist')}</p><small>${esc(meta)}</small></div><span class="ab-link" aria-hidden="true">↗</span></a>`;}).join('')+'</div><div class="ab-controls"><button type="button" class="ab-nav ab-prev" aria-label="Previous birthday artist">←</button><span class="ab-position">'+(index+1)+' / '+Math.min(rows.length,8)+'</span><button type="button" class="ab-nav ab-next" aria-label="Next birthday artist">→</button></div>';content.querySelector('.ab-prev').addEventListener('click',()=>change(-1));content.querySelector('.ab-next').addEventListener('click',()=>change(1));}
+  function change(direction){const total=Math.min(rows.length,8);if(total<2)return;index=(index+direction+total)%total;render();}
+  async function start(){mount();try{rows=await fetchBirthdays();render();}catch(_){const content=d.querySelector('#ab-content');if(content)content.innerHTML='<div class="ab-empty"><strong>Birthday data is temporarily unavailable.</strong><span>The daily feature will retry on the next page load.</span></div>';}}
   if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',()=>setTimeout(start,1100));else setTimeout(start,1100);
 })();
