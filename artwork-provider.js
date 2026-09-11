@@ -19,7 +19,10 @@ async function deezerResponse(url){
  }:{
    trackName:x.title||'',artistName:x.artist?.name||'',collectionName:x.album?.title||'',artworkUrl100:x.album?.cover_xl||x.album?.cover_big||x.album?.cover_medium||''
  });
- const exact=results.find(x=>norm(entity==='album'?x.collectionName:x.trackName)===wanted&&x.artworkUrl100);
+ const exact=results.find(x=>{
+   const title=norm(entity==='album'?x.collectionName:x.trackName),artist=norm(x.artistName);
+   return title&&x.artworkUrl100&&((wanted===title)||(wanted.includes(title)&&(!artist||wanted.includes(artist))));
+ });
  if(exact)return new Response(JSON.stringify({results:[exact]}),{status:200,headers:{'Content-Type':'application/json'}});
  if(entity==='album'){
    const artistMatch=results.find(x=>norm(x.artistName)===wanted&&x.artworkUrl100);
