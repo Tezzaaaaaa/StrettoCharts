@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - 'scripts/update.mjs'
+      - 'scripts/check.mjs'
+      - 'package.json'
       - '.github/workflows/update.yml'
   schedule:
     - cron: '17 * * * *'
@@ -29,8 +31,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Validate repository
+        run: npm run check
+
       - name: Update charts
         run: npm run update
+
+      - name: Validate updated chart data
+        run: npm run check
 
       - name: Commit changed chart data
         shell: bash
