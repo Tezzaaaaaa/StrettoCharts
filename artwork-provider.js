@@ -13,14 +13,19 @@ async function deezerResponse(url){
  const endpoint=entity==='album'?'album':'track';
  const r=await timeout(nativeFetch(`https://api.deezer.com/search/${endpoint}?q=${encodeURIComponent(q)}&limit=8`),1200);
  if(!r.ok)throw Error('Deezer artwork lookup failed');
- const j=await r.json(),wanted=norm(q.split(/\s+/)[0]);
+ const j=await r.json(),wanted=norm(q);
  const results=(j.data||[]).map(x=>entity==='album'?{
    collectionName:x.title||'',artistName:x.artist?.name||'',artworkUrl100:x.cover_xl||x.cover_big||x.cover_medium||''
  }:{
    trackName:x.title||'',artistName:x.artist?.name||'',collectionName:x.album?.title||'',artworkUrl100:x.album?.cover_xl||x.album?.cover_big||x.album?.cover_medium||''
  });
- if(!results.length)return null;
- return new Response(JSON.stringify({results}),{status:200,headers:{'Content-Type':'application/json'}});
+ const exact=results.find(x=>norm(entity==='album'?x.collectionName:x.trackName)===wanted&&x.artworkUrl100);
+ if(exact)return new Response(JSON.stringify({results:[exact]}),{status:200,headers:{'Content-Type':'application/json'}});
+ if(entity==='album'){
+   const artistMatch=results.find(x=>norm(x.artistName)===wanted&&x.artworkUrl100);
+   if(artistMatch)return new Response(JSON.stringify({results:[artistMatch]}),{status:200,headers:{'Content-Type':'application/json'}});
+ }
+ return null;
 }
 window.fetch=async function(input,init){
  const url=typeof input==='string'?input:input?.url||'';
