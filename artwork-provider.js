@@ -5,6 +5,7 @@ const nativeFetch=window.fetch.bind(window);
 const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
 const originalUrl=window.fetch;
 const timeout=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error('artwork lookup timeout')),ms))]);
+function responseFor(result){return new Response(JSON.stringify({results:[result]}),{status:200,headers:{'Content-Type':'application/json'}})}
 async function deezerResponse(url){
  const u=new URL(url,location.href),term=u.searchParams.get('term')||'',entity=u.searchParams.get('entity')||'song';
  if(!u.hostname.includes('itunes.apple.com')||u.pathname!=='/search')return null;
@@ -23,9 +24,12 @@ async function deezerResponse(url){
    const title=norm(entity==='album'?x.collectionName:x.trackName),artist=norm(x.artistName);
    return title&&x.artworkUrl100&&((wanted===title)||(wanted.includes(title)&&artist&&wanted.includes(artist)));
  });
- if(exact)return new Response(JSON.stringify({results:[exact]}),{status:200,headers:{'Content-Type':'application/json'}});
+ if(exact)return responseFor(exact);
  const artistMatch=results.find(x=>norm(x.artistName)===wanted&&x.artworkUrl100);
- if(artistMatch)return new Response(JSON.stringify({results:[artistMatch]}),{status:200,headers:{'Content-Type':'application/json'}});
+ if(artistMatch){
+   if(entity==='song')return responseFor({...artistMatch,trackName:artistMatch.artistName,artistName:artistMatch.artistName});
+   return responseFor(artistMatch);
+ }
  return null;
 }
 window.fetch=async function(input,init){
