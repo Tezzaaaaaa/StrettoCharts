@@ -1,5 +1,0 @@
-/* Restore the normal white page and remove the decorative hero treatment. */
-html,body{background:#fff!important}
-.hero{background:#fff!important}
-.hero:after{display:none!important}
-html[data-theme="dark"] .hero:after{display:none!important}

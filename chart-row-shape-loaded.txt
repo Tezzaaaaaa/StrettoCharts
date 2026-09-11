@@ -1,1 +1,0 @@
-Chart row refinement is committed on fix/chart-row-shape.
