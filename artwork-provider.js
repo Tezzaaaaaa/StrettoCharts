@@ -21,13 +21,11 @@ async function deezerResponse(url){
  });
  const exact=results.find(x=>{
    const title=norm(entity==='album'?x.collectionName:x.trackName),artist=norm(x.artistName);
-   return title&&x.artworkUrl100&&((wanted===title)||(wanted.includes(title)&&(!artist||wanted.includes(artist))));
+   return title&&x.artworkUrl100&&((wanted===title)||(wanted.includes(title)&&artist&&wanted.includes(artist)));
  });
  if(exact)return new Response(JSON.stringify({results:[exact]}),{status:200,headers:{'Content-Type':'application/json'}});
- if(entity==='album'){
-   const artistMatch=results.find(x=>norm(x.artistName)===wanted&&x.artworkUrl100);
-   if(artistMatch)return new Response(JSON.stringify({results:[artistMatch]}),{status:200,headers:{'Content-Type':'application/json'}});
- }
+ const artistMatch=results.find(x=>norm(x.artistName)===wanted&&x.artworkUrl100);
+ if(artistMatch)return new Response(JSON.stringify({results:[artistMatch]}),{status:200,headers:{'Content-Type':'application/json'}});
  return null;
 }
 window.fetch=async function(input,init){
