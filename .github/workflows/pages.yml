@@ -8,6 +8,8 @@ on:
       - 'dashboard.html'
       - 'search-enhancements.js'
       - 'artwork-provider.js'
+      - 'scripts/check.mjs'
+      - 'package.json'
       - 'data/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -30,13 +32,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Validate site
+        run: npm run check
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
-      # Redeploy the restored search implementation after the rollback.
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v5
