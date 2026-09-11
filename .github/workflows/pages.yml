@@ -36,6 +36,7 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
+      # Redeploy the restored search implementation after the rollback.
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v5
