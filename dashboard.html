@@ -38,6 +38,7 @@ html[data-theme="dark"]{color-scheme:dark;color:#f4f4f8;background:#101014;--mut
 <script>
 (function(){const root=document.documentElement,button=document.getElementById('themeToggle'),key='strettocharts-theme';function apply(theme,persist){const dark=theme==='dark';root.dataset.theme=dark?'dark':'light';button.textContent=dark?'☀':'☾';button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');if(persist)try{localStorage.setItem(key,dark?'dark':'light')}catch(e){}}let saved=null;try{saved=localStorage.getItem(key)}catch(e){}apply(saved||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),false);button.addEventListener('click',()=>apply(root.dataset.theme==='dark'?'light':'dark',true));})();
 </script>
+<script src="artwork-provider.js"></script>
 <script src="search-enhancements.js"></script>
 </body>
 </html>
