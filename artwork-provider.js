@@ -3,8 +3,10 @@
 'use strict';
 const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
 const cache=new Map();
-const timeout=async(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error('artwork lookup timeout')),ms))]);
-const artwork=x=>x?.cover_xl||x?.cover_big||x?.cover_medium||x?.artworkUrl100?.replace(/100x100/g,'1200x1200')||'';
+const timeout=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error('artwork lookup timeout')),ms))]);
+const cover=x=>x?.cover_xl||x?.cover_big||x?.cover_medium||'';
+const artistArt=x=>x?.picture_xl||x?.picture_big||x?.picture_medium||'';
+const appleArt=x=>x?.artworkUrl100?.replace(/100x100/g,'1200x1200')||'';
 async function deezer(kind,name,artist){
  const query=[name,artist].filter(Boolean).join(' ').trim();
  if(!query)return '';
@@ -12,14 +14,17 @@ async function deezer(kind,name,artist){
  const r=await timeout(fetch(`https://api.deezer.com/search/${endpoint}?q=${encodeURIComponent(query)}&limit=8`),1200);
  if(!r.ok)throw Error('Deezer artwork lookup failed');
  const data=(await r.json()).data||[], wanted=norm(name),wantedArtist=norm(artist);
+ if(kind==='Artist'){
+   const match=data.find(x=>norm(x.name)===wanted&&artistArt(x));
+   return match?artistArt(match):'';
+ }
  const match=data.find(x=>{
-   const title=norm(kind==='Album'?x.title:kind==='Artist'?x.name:x.title);
-   const by=norm(kind==='Artist'?x.name:x.artist?.name);
-   return artwork(kind==='Artist'?x:{cover_xl:x.album?.cover_xl,cover_big:x.album?.cover_big,cover_medium:x.album?.cover_medium})&&title===wanted&&(!wantedArtist||by===wantedArtist);
+   const title=norm(x.title),by=norm(x.artist?.name);
+   return title===wanted&&(!wantedArtist||by===wantedArtist)&&cover(x.album||x);
  });
- if(match)return artwork(kind==='Artist'?match:match);
- const fallback=data.find(x=>artwork(kind==='Artist'?x:x.album) && (!wantedArtist||norm(x.artist?.name)===wantedArtist));
- return fallback?artwork(kind==='Artist'?fallback:fallback.album):'';
+ if(match)return cover(kind==='Album'?match:match.album);
+ const fallback=data.find(x=>cover(kind==='Album'?x:x.album)&&(!wantedArtist||norm(x.artist?.name)===wantedArtist));
+ return fallback?cover(kind==='Album'?fallback:fallback.album):'';
 }
 async function apple(kind,name,artist){
  const entity=kind==='Album'?'album':'song';
@@ -28,7 +33,7 @@ async function apple(kind,name,artist){
  if(!r.ok)throw Error('Apple artwork lookup failed');
  const wanted=norm(name),wantedArtist=norm(artist),results=(await r.json()).results||[];
  const match=results.find(x=>norm(kind==='Album'?x.collectionName:x.trackName)===wanted&&(!wantedArtist||norm(x.artistName)===wantedArtist)&&x.artworkUrl100);
- return match?.artworkUrl100?.replace(/100x100/g,'1200x1200')||'';
+ return match?appleArt(match):'';
 }
 window.strettoArtwork=async function(kind,name,artist){
  const key=`${kind}|${norm(name)}|${norm(artist)}`;
