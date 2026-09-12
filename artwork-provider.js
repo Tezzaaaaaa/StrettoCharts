@@ -27,11 +27,15 @@ async function deezer(kind,name,artist){
  return fallback?cover(kind==='Album'?fallback:fallback.album):'';
 }
 async function apple(kind,name,artist){
- const entity=kind==='Album'?'album':'song';
+ const entity=kind==='Album'||kind==='Artist'?'album':'song';
  const query=[name,artist].filter(Boolean).join(' ');
- const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=${entity}&limit=8&country=AU`);
+ const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=${entity}&limit=12&country=AU`);
  if(!r.ok)throw Error('Apple artwork lookup failed');
  const wanted=norm(name),wantedArtist=norm(artist),results=(await r.json()).results||[];
+ if(kind==='Artist'){
+   const match=results.find(x=>norm(x.artistName)===wanted&&x.artworkUrl100);
+   return match?appleArt(match):'';
+ }
  const match=results.find(x=>norm(kind==='Album'?x.collectionName:x.trackName)===wanted&&(!wantedArtist||norm(x.artistName)===wantedArtist)&&x.artworkUrl100);
  return match?appleArt(match):'';
 }
