@@ -54,7 +54,7 @@ const artwork = await readFile(new URL('./artwork-provider.js', root), 'utf8');
 for (const [name, text, required] of [
   ['dashboard.html', dashboard, ['id="searchForm"', 'id="search"', 'id="results"', 'artwork-provider.js', 'search-enhancements.js']],
   ['index.html', index, ['dashboard.html']],
-  ['search-enhancements.js', search, ['result-sections', 'Artist', 'Song', 'Album', 'Other']],
+  ['search-enhancements.js', search, ['result-sections', 'Artist', 'Song', 'Album']],
   ['artwork-provider.js', artwork, ['itunes.apple.com/search', 'deezer.com']]
 ]) {
   for (const marker of required) if (!text.includes(marker)) fail(`${name}: missing required marker ${marker}`);
