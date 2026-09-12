@@ -37,6 +37,14 @@ jobs:
       - name: Update charts
         run: npm run update
 
+      - name: Preserve existing daily history
+        shell: bash
+        run: |
+          date=$(date -u +%F)
+          if git cat-file -e "HEAD:data/history/${date}.json" 2>/dev/null; then
+            git checkout HEAD -- "data/history/${date}.json"
+          fi
+
       - name: Validate updated chart data
         run: npm run check
 
