@@ -124,7 +124,7 @@ function parseSongSummary(html) {
 
 async function fetchArtist(artist) {
   const id = artist.spotifyArtistId;
-  const base = `https://kworb.net/spotify/artist/${id}`;
+  const base = `https://www.kworb.net/spotify/artist/${id}`;
   const [songsHtml, albumsHtml, chartHtml, listenersHtml] = await Promise.all([
     get(`${base}_songs.html`),
     get(`${base}_albums.html`),
