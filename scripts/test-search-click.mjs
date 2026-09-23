@@ -4,7 +4,7 @@ import vm from 'node:vm';
 const searchSource=await readFile(new URL('../search-enhancements.js',import.meta.url),'utf8');
 const spotifySource=await readFile(new URL('../spotify-tracking.js',import.meta.url),'utf8');
 const listeners=new Map(),observers=[];
-let candidate=null,profileVisible=false,profilePanel=null,profileName=null;
+let candidate=null,profileVisible=false,profilePanel=null,profileName=null,resolveArtwork;const artworkReady=new Promise(resolve=>{resolveArtwork=resolve});
 function el(id=''){
   const x={id,value:'',textContent:'',dataset:{},isConnected:true,parent:null,
     addEventListener(t,f){listeners.set(t,f)},dispatchEvent(e){listeners.get(e.type)?.(e)},
@@ -21,7 +21,7 @@ const results=el('results'),wrap=el('results-wrap'),profile=el('profile');profil
 const back=el('backSearch');profile.querySelector=s=>s==='.profile-name'?profileName:s==='#backSearch'?back:null;
 const map={'#searchForm':el('searchForm'),'#search':el('search'),'#results':results,'#title':el('title'),'#sub':el('sub'),'#count':el('count'),'#updated':el('updated'),'.results-wrap':wrap};
 const document={head:el('head'),createElement:()=>el(),querySelector:s=>map[s]||null,querySelectorAll:()=>[]};
-const context={console,document,window:{},location:{href:'https://strettocharts.test/'},URL,setTimeout,clearTimeout,
+const context={console,document,window:{strettoArtwork:async()=>{await artworkReady;return 'https://example.com/art.jpg'}},location:{href:'https://strettocharts.test/'},URL,setTimeout,clearTimeout,
   MutationObserver:class{constructor(cb){this.cb=cb}observe(target,o){this.target=target;this.subtree=Boolean(o?.subtree);observers.push(this)}},
   fetch:async url=>{
     if(url==='data/latest.json')return{ok:true,json:async()=>({schemaVersion:3,generatedAt:'2026-09-23T00:00:00.000Z',sources:[{id:'test',name:'Test Chart',status:'ok',entries:[{rank:1,previousRank:1,peakRank:1,weeksOnChart:2,title:'Die With A Smile',artists:['Lady Gaga']}]}]})};
@@ -34,5 +34,6 @@ await new Promise(r=>setTimeout(r,0));
 const form=map['#searchForm'],input=map['#search'];input.value='Lady Gaga';form.dispatchEvent({type:'submit',preventDefault(){}});await new Promise(r=>setTimeout(r,0));
 if(!candidate)throw new Error('search result candidate was not rendered');
 candidate.dispatchEvent({type:'click'});await new Promise(r=>setTimeout(r,0));
-if(!profileVisible||!results.innerHTML.includes('class="profile"'))throw new Error('click did not replace #results with the profile');
+if(!profileVisible||!results.innerHTML.includes('class="profile"'))throw new Error('click did not replace #results with the profile before artwork resolved');
+resolveArtwork();await new Promise(r=>setTimeout(r,0));
 console.log('Search click test passed: clicking a .candidate replaces #results with the profile.');
