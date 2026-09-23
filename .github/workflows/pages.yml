@@ -8,9 +8,14 @@ on:
       - 'dashboard.html'
       - 'search-enhancements.js'
       - 'artwork-provider.js'
+      - 'spotify-tracking.js'
+      - 'data/latest.json'
+      - 'data/history/index.json'
+      - 'data/history/*.json'
+      - 'data/following.json'
+      - 'data/spotify-artists.json'
       - 'scripts/check.mjs'
       - 'package.json'
-      - 'data/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 

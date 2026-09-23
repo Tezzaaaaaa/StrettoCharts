@@ -39,7 +39,8 @@ StrettoCharts/
 │   ├── following.json         # Default artist watchlist
 │   └── history/               # Date-stamped historical snapshots
 └── .github/workflows/
-    ├── pages.yml              # GitHub Pages deployment
+    ├── pages.yml              # GitHub Pages deployment and validation
+    ├── check.yml              # Pull-request and main-branch validation
     └── update.yml             # Scheduled/manual data updates
 ```
 
@@ -52,6 +53,14 @@ Current chart sources are stored in `data/latest.json` and historical snapshots 
 The dashboard keeps sources separate. It does not create an unofficial combined chart position from different methodologies, and it does not manufacture missing values.
 
 Movement follows the source data where available. When calculated from ranks, a lower numerical rank is treated as an improvement (for example, #10 → #6).
+
+## Search history loading
+
+Current chart search is available immediately from `data/latest.json`. Historical snapshots are loaded only after a user selects an artist, song or album.
+
+Before history loads, the selected profile shows its current chart placements and a loading state for history. If no historical snapshots exist, the profile reports that history is empty. If the history index or any snapshot cannot be loaded, current chart data remains visible and the profile reports that history could not be loaded; successfully retrieved historical snapshots remain usable when only part of the archive fails.
+
+This lazy loading keeps the initial dashboard responsive as the historical archive grows without changing current-search behaviour.
 
 ## Automation
 

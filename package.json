@@ -6,6 +6,7 @@
   "description": "Automated music-chart updater for StrettoCharts.",
   "scripts": {
     "check": "node scripts/check.mjs",
+    "test:search-race": "node scripts/test-search-race.mjs",
     "update": "node scripts/update.mjs && node scripts/update-spotify-artists.mjs"
   }
 }

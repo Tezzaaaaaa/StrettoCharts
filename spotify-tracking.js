@@ -48,13 +48,13 @@ function renderArtistWatch(){
  html+=(data.topAlbums||[]).slice(0,10).map(function(x,i){return '<div class="spotify-row"><b>'+(i+1)+'</b><span>'+esc(x.title)+'</span><small>'+compact(x.streams)+'</small></div>';}).join('');
  html+='</div></div>';panel.innerHTML=html;
 }
-function observe(){var target=$('#results');if(!target)return;new MutationObserver(function(){refreshProfileButton();renderArtistWatch();}).observe(target,{childList:true,subtree:true});}
+function observe(){var target=$('#results');if(!target)return;new MutationObserver(function(){refreshProfileButton();renderArtistWatch();}).observe(target,{childList:true});}
 async function init(){
  style();
  try{var r=await fetch('data/spotify-artists.json',{cache:'no-store'});if(r.ok)stats=await r.json();}catch(e){}
  try{var r2=await fetch('data/following.json',{cache:'no-store'});if(r2.ok)catalog=await r2.json();}catch(e){}
  following=readLocal();if(!following&&Array.isArray(catalog))following=catalog.slice();if(!following)following=[];
- renderWatch();observe();
+ renderWatch();observe();renderArtistWatch();
 }
 init();
 window.strettoSpotify={toggle:toggle,focusArtist:focusArtist};

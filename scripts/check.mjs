@@ -23,6 +23,8 @@ const validateSources = (sources, label) => {
       if (!entry.title || !Array.isArray(entry.artists) || entry.artists.length === 0) fail(`${source.id}: incomplete chart entry at rank ${entry.rank}`);
       if (entry.previousRank != null && (!Number.isInteger(entry.previousRank) || entry.previousRank < 1)) fail(`${source.id}: invalid previousRank at rank ${entry.rank}`);
       if (entry.peakRank != null && (!Number.isInteger(entry.peakRank) || entry.peakRank < 1)) fail(`${source.id}: invalid peakRank at rank ${entry.rank}`);
+      if (entry.movement != null && !Number.isInteger(entry.movement)) fail(`${source.id}: invalid movement at rank ${entry.rank}`);
+      if (entry.movementLabel != null && !['new', 'up', 'down', 'same'].some(label => String(entry.movementLabel).startsWith(label))) fail(`${source.id}: invalid movementLabel at rank ${entry.rank}`);
       if (entry.weeksOnChart != null && (!Number.isInteger(entry.weeksOnChart) || entry.weeksOnChart < 1)) fail(`${source.id}: invalid weeksOnChart at rank ${entry.rank}`);
     }
   }
@@ -31,6 +33,7 @@ const validateSources = (sources, label) => {
 const latest = await readJson('./data/latest.json');
 if (latest?.schemaVersion !== 3) fail('data/latest.json: unsupported schemaVersion');
 if (!latest?.generatedAt) fail('data/latest.json: missing generatedAt');
+if (!/^\d{4}-\d{2}-\d{2}T/.test(latest.generatedAt) || Number.isNaN(Date.parse(latest.generatedAt))) fail('data/latest.json: generatedAt is not a valid ISO date');
 validateSources(latest.sources, 'data/latest.json');
 
 if (!Array.isArray(latest.artistRankings)) fail('data/latest.json: artistRankings is not an array');
