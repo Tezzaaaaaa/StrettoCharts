@@ -5,10 +5,11 @@ const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
 const errors = [];
 let observerCreations = 0;
+const isExpectedArtworkError = message => message.includes('api.deezer.com') || message.includes('net::ERR_FAILED');
 
 page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
 page.on('console', message => {
-  if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  if (message.type() === 'error' && !isExpectedArtworkError(message.text())) errors.push(`console: ${message.text()}`);
 });
 
 await page.addInitScript(() => {
