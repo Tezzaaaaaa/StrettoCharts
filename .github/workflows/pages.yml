@@ -11,6 +11,7 @@ on:
       - 'scripts/test-browser.mjs'
       - 'artwork-provider.js'
       - 'scripts/check.mjs'
+      - 'scripts/update-spotify-artists.mjs'
       - 'package.json'
       - 'data/**'
       - '.github/workflows/pages.yml'
