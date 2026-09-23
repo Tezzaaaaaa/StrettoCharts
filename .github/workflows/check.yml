@@ -25,3 +25,7 @@ jobs:
         run: npm run check
       - name: Test search race
         run: npm run test:search-race
+      - name: Test search click
+        run: node scripts/test-search-click.mjs
+      - name: Test Spotify tracking
+        run: node scripts/test-spotify-tracking.mjs
