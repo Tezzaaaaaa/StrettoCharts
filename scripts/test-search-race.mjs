@@ -14,6 +14,7 @@ function element(id='') {
     dataset: {},
     after() {},
     appendChild() {},
+    setAttribute(name, value) { this[name] = value; },
     addEventListener(type, fn) { listeners.set(type, fn); },
     dispatchEvent(event) { listeners.get(event.type)?.(event); },
     querySelectorAll() { return []; },
@@ -52,6 +53,13 @@ globalThis.fetch = async url => {
     };
   }
 
+  if (url === 'data/history/index.json') {
+    return { ok: true, async json() { return ['2026-09-22']; } };
+  }
+  if (url === 'data/history/2026-09-22.json') {
+    return { ok: true, async json() { return { schemaVersion: 3, generatedAt: '2026-09-22T00:00:00.000Z', sources: [] }; } };
+  }
+  if (typeof url === 'string' && !url.startsWith('https://itunes.apple.com/')) throw new Error(`Unexpected fetch URL: ${url}`);
   const query = new URL(url).searchParams.get('term');
   if (query === 'first') await firstPending;
 
