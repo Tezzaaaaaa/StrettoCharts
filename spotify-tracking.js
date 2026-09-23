@@ -15,7 +15,7 @@ function style(){
  if($('#stretto-spotify-css'))return;
  var s=d.createElement('style');s.id='stretto-spotify-css';
  s.textContent='.artist-watch{margin:24px 0 12px}.watch-head{display:flex;justify-content:space-between;align-items:end;margin:0 2px 10px}.watch-head h2{margin:0;font-size:20px;letter-spacing:-.03em}.watch-head p{margin:3px 0 0;color:var(--muted);font-size:11px}.watch-empty{padding:15px 17px;border-radius:17px;background:var(--panel);border:1px dashed var(--line);color:var(--muted);font-size:11px}.watch-list{display:flex;gap:9px;overflow:auto;padding-bottom:3px}.watch-chip{display:flex;align-items:center;gap:9px;flex:0 0 auto;padding:9px 11px;border:1px solid var(--line);background:var(--panel);border-radius:14px;cursor:pointer;color:inherit}.watch-chip:hover{border-color:#7657ff}.watch-chip strong{font-size:11px}.watch-chip span{display:block;color:var(--muted);font-size:9px}.follow-btn{border:1px solid currentColor;background:#ffffff14;color:inherit;border-radius:999px;padding:8px 12px;font-size:10px;font-weight:800;cursor:pointer}.follow-btn.following{background:#fff;color:#17171c}.spotify-panel{margin-top:12px;padding:19px;border-radius:21px;background:var(--panel);border:1px solid var(--line);box-shadow:0 7px 24px #24243b0a}.spotify-panel h3{margin:0;font-size:17px}.spotify-source{margin:4px 0 12px;color:var(--muted);font-size:9px}.spotify-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.spotify-metric{padding:11px;border-radius:14px;background:var(--soft)}.spotify-metric strong{display:block;font-size:18px}.spotify-metric span{font-size:8px;color:var(--muted)}.spotify-tables{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.spotify-table{padding:13px;border-radius:16px;background:var(--soft)}.spotify-table h4{margin:0 0 8px;font-size:12px}.spotify-row{display:grid;grid-template-columns:22px 1fr auto;gap:7px;padding:7px 0;border-bottom:1px solid var(--line);font-size:10px}.spotify-row:last-child{border-bottom:0}.spotify-row small{color:var(--muted)}.spotify-foot{margin-top:10px;color:var(--muted);font-size:9px;line-height:1.5}.spotify-missing{padding:14px;border-radius:14px;background:var(--soft);color:var(--muted);font-size:10px}@media(max-width:700px){.spotify-metrics{grid-template-columns:1fr 1fr}.spotify-tables{grid-template-columns:1fr}.watch-head{display:block}.watch-head p{margin-top:4px}}';
- d.head.appendChild(s);
+ s.textContent += '.spotify-details{margin-top:12px;border:1px solid var(--line);border-radius:16px;background:var(--soft);overflow:hidden}.spotify-details>summary{cursor:pointer;padding:13px 15px;font-size:12px;font-weight:800;list-style:none}.spotify-details>summary::-webkit-details-marker{display:none}.spotify-details>summary:after{content:"+";float:right;color:var(--muted)}.spotify-details[open]>summary:after{content:"−"}.spotify-table-scroll{overflow:auto;max-height:620px;border-top:1px solid var(--line)}.spotify-full-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:9px}.spotify-full-table th,.spotify-full-table td{padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:left}.spotify-full-table th{position:sticky;top:0;background:var(--panel);font-weight:800;z-index:1}.spotify-full-table td.num,.spotify-full-table th.num{text-align:right}.spotify-full-table tr:last-child td{border-bottom:0}.spotify-count{color:var(--muted);font-size:9px;font-weight:600}.spotify-market-note{padding:10px 13px;color:var(--muted);font-size:9px;line-height:1.5;border-bottom:1px solid var(--line)}'; d.head.appendChild(s);
 }
 function renderWatch(){
  var host=$('#artistWatch');
@@ -35,9 +35,9 @@ function refreshProfileButton(){
 }
 function renderArtistWatch(){
  var profile=$('.profile');if(!profile)return;var name=profile.querySelector('.profile-name');if(!name)return;name=name.textContent.trim();
- var data=artistData(name), panel=$('#spotifyArtistPanel');
+ var data=artistData(name),panel=$('#spotifyArtistPanel');
  if(!panel){panel=d.createElement('section');panel.id='spotifyArtistPanel';panel.className='spotify-panel';profile.after(panel);}
- if(!data){panel.innerHTML='<h3>Spotify-style artist tracking</h3><div class="spotify-source">StrettoCharts tracking layer</div><div class="spotify-missing">This artist is followed locally, but no streaming snapshot is available yet. Chart positions can still be tracked from the StrettoCharts dataset.</div>';return;}
+ if(!data){panel.innerHTML='<h3>Spotify artist tracking</h3><div class="spotify-source">StrettoCharts tracking layer</div><div class="spotify-missing">No Spotify snapshot is available for this artist yet.</div>';return;}
  var metrics=[['Monthly listeners',compact(data.monthlyListeners)],['Daily streams',compact(data.dailyStreams)],['Total streams',compact(data.totalStreams)],['Tracks',fmt(data.tracks)],['Listener peak',compact(data.monthlyListenersPeak)]];
  var html='<h3>Spotify artist tracking</h3><div class="spotify-source">Public Spotify statistics via Kworb; not Spotify for Artists. Snapshot: '+esc(String(stats&&stats.generatedAt||'').slice(0,10))+(data.stale?' · last successful snapshot retained':'')+'</div>';
  html+='<div class="spotify-metrics">'+metrics.map(function(x){return '<div class="spotify-metric"><strong>'+esc(x[1])+'</strong><span>'+esc(x[0])+'</span></div>';}).join('')+'</div>';
@@ -46,9 +46,32 @@ function renderArtistWatch(){
  html+=(data.topSongs||[]).slice(0,10).map(function(x,i){return '<div class="spotify-row"><b>'+(i+1)+'</b><span>'+esc(x.title)+'</span><small>'+compact(x.streams)+'</small></div>';}).join('');
  html+='</div><div class="spotify-table"><h4>Top albums by streams</h4>';
  html+=(data.topAlbums||[]).slice(0,10).map(function(x,i){return '<div class="spotify-row"><b>'+(i+1)+'</b><span>'+esc(x.title)+'</span><small>'+compact(x.streams)+'</small></div>';}).join('');
- html+='</div></div>';panel.innerHTML=html;
+ html+='</div></div>';
+
+ var chart=data.chartHistory&&Array.isArray(data.chartHistory.rows)?data.chartHistory:null;
+ if(chart){
+   html+='<details class="spotify-details"><summary>Spotify chart history <span class="spotify-count">'+chart.rows.length+' tracks · '+chart.markets.length+' markets</span></summary>';
+   html+='<div class="spotify-market-note">Peak positions reported by Kworb for every market available in the source. “—” means the track did not appear in that market\'s tracked Top 200.</div>';
+   html+='<div class="spotify-table-scroll"><table class="spotify-full-table"><thead><tr><th>Peak date</th><th>Track</th><th class="num">Streams</th>'+chart.markets.map(function(m){return '<th class="num">'+esc(m)+'</th>';}).join('')+'</tr></thead><tbody>';
+   html+=chart.rows.map(function(row){return '<tr><td>'+esc(row.peakDate)+'</td><td>'+esc(row.title)+'</td><td class="num">'+fmt(row.streams)+'</td>'+chart.markets.map(function(m){return '<td class="num">'+esc(row.peaks&&row.peaks[m]!=null?'#'+row.peaks[m]:'—')+'</td>';}).join('')+'</tr>';}).join('');
+   html+='</tbody></table></div></details>';
+ }
+
+ var songs=Array.isArray(data.songs)?data.songs:[];var albums=Array.isArray(data.albums)?data.albums:[];
+ if(songs.length){
+   html+='<details class="spotify-details"><summary>Full Spotify song catalogue <span class="spotify-count">'+songs.length+' tracks</span></summary>';
+   html+='<div class="spotify-table-scroll"><table class="spotify-full-table"><thead><tr><th>#</th><th>Track</th><th class="num">Streams</th><th class="num">Daily</th></tr></thead><tbody>';
+   html+=songs.map(function(x,i){return '<tr><td>'+fmt(i+1)+'</td><td>'+esc(x.title)+'</td><td class="num">'+fmt(x.streams)+'</td><td class="num">'+fmt(x.dailyStreams)+'</td></tr>';}).join('');
+   html+='</tbody></table></div></details>';
+ }
+ if(albums.length){
+   html+='<details class="spotify-details"><summary>Full Spotify album / release catalogue <span class="spotify-count">'+albums.length+' releases</span></summary>';
+   html+='<div class="spotify-table-scroll"><table class="spotify-full-table"><thead><tr><th>#</th><th>Release</th><th class="num">Streams</th><th class="num">Daily</th></tr></thead><tbody>';
+   html+=albums.map(function(x,i){return '<tr><td>'+fmt(i+1)+'</td><td>'+esc(x.title)+'</td><td class="num">'+fmt(x.streams)+'</td><td class="num">'+fmt(x.dailyStreams)+'</td></tr>';}).join('');
+   html+='</tbody></table></div></details>';
+ }
+ panel.innerHTML=html;
 }
-window.strettoSpotifyRefresh=function(){refreshProfileButton();renderArtistWatch();};
 async function init(){
  style();
  try{var r=await fetch('data/spotify-artists.json',{cache:'no-store'});if(r.ok)stats=await r.json();}catch(e){}
