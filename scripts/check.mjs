@@ -53,12 +53,18 @@ const dashboard = await readFile(new URL('./dashboard.html', root), 'utf8');
 const index = await readFile(new URL('./index.html', root), 'utf8');
 const search = await readFile(new URL('./search-enhancements.js', root), 'utf8');
 const artwork = await readFile(new URL('./artwork-provider.js', root), 'utf8');
+const spotifyTracking = await readFile(new URL('./spotify-tracking.js', root), 'utf8');
+const spotifyArtists = await readJson('./data/spotify-artists.json');
+const following = await readJson('./data/following.json');
 
 for (const [name, text, required] of [
   ['dashboard.html', dashboard, ['id="searchForm"', 'id="search"', 'id="results"', 'artwork-provider.js', 'search-enhancements.js']],
   ['index.html', index, ['dashboard.html']],
   ['search-enhancements.js', search, ['result-sections', 'Artist', 'Song', 'Album']],
-  ['artwork-provider.js', artwork, ['itunes.apple.com/search', 'deezer.com']]
+  ['artwork-provider.js', artwork, ['itunes.apple.com/search', 'deezer.com']],
+  ['spotify-tracking.js', spotifyTracking, ['spotifyArtistPanel', 'Follow artist', 'data/spotify-artists.json']],
+  ['data/spotify-artists.json', JSON.stringify(spotifyArtists), ['Lady Gaga', 'monthlyListeners', 'totalStreams']],
+  ['data/following.json', JSON.stringify(following), ['Lady Gaga', '1HY2Jd0NmPuamShAr6KMms']]
 ]) {
   for (const marker of required) if (!text.includes(marker)) fail(`${name}: missing required marker ${marker}`);
 }
