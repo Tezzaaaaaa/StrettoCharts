@@ -1,3 +1,4 @@
+window.__strettoSpotifyLoaded=true;
 (function(){
 'use strict';
 var d=document, $=function(s){return d.querySelector(s);};
