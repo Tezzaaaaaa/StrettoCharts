@@ -7,5 +7,8 @@
   "scripts": {
     "check": "node scripts/check.mjs",
     "update": "node scripts/update.mjs && node scripts/update-spotify-artists.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
   }
 }
