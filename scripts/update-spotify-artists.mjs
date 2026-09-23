@@ -57,24 +57,6 @@ function parseArtistAlbums(html) {
   return out;
 }
 
-function parseSummary(html, artistName) {
-  const rows = parseRows(html);
-  const headerIndex = rows.findIndex(r => r.some(x => /^listeners$/i.test(x)) && r.some(x => /daily/i.test(x)));
-  if (headerIndex < 0) return {};
-  const header = rows[headerIndex].map(x => x.toLowerCase());
-  const artistIndex = header.findIndex(x => /artist/.test(x));
-  const listenersIndex = header.findIndex(x => /^listeners$/.test(x));
-  const dailyIndex = header.findIndex(x => /daily/.test(x));
-  const peakIndex = header.findIndex(x => /^peak$/i.test(x));
-  const row = rows.slice(headerIndex + 1).find(r => r[artistIndex] && r[artistIndex].toLowerCase() === artistName.toLowerCase());
-  if (!row || listenersIndex < 0) return {};
-  return {
-    monthlyListeners: number(row[listenersIndex]),
-    monthlyListenersDailyChange: dailyIndex >= 0 ? number(row[dailyIndex]) : null,
-    monthlyListenersPeak: peakIndex >= 0 ? number(row[peakIndex]) : null
-  };
-}
-
 function parseChartHistory(html) {
   const rows = parseRows(html);
   const headerIndex = rows.findIndex(row => /^peak date$/i.test(row[0] || '') && /^title$/i.test(row[1] || '') && /^streams$/i.test(row[2] || ''));
@@ -124,19 +106,18 @@ function parseSongSummary(html) {
   };
 }
 
-async function fetchArtist(artist) {
+async function fetchArtist(artist, previousArtist) {
   const id = artist.spotifyArtistId;
   const base = `https://www.kworb.net/spotify/artist/${id}`;
-  const [songsHtml, albumsHtml, chartHtml, listenersHtml] = await Promise.all([
+  const [songsHtml, albumsHtml, chartHtml] = await Promise.all([
     get(`${base}_songs.html`),
     get(`${base}_albums.html`),
-    get(`${base}.html`),
-    get('https://www.kworb.net/spotify/listeners.html')
+    get(`${base}.html`)
   ]);
   return {
+    ...(previousArtist || {}),
     ...artist,
     ...parseSongSummary(songsHtml),
-    ...parseSummary(listenersHtml, artist.name),
     songs: parseArtistSongs(songsHtml),
     albums: parseArtistAlbums(albumsHtml),
     topSongs: parseArtistSongs(songsHtml).slice(0, 10),
@@ -152,7 +133,7 @@ async function main() {
   const results = [];
   for (const artist of following) {
     try {
-      results.push(await fetchArtist(artist));
+      results.push(await fetchArtist(artist, previous.find(x => x.spotifyArtistId === artist.spotifyArtistId)));
       console.log(`OK Spotify artist: ${artist.name}`);
     } catch (error) {
       const old = previous.find(x => x.spotifyArtistId === artist.spotifyArtistId);
