@@ -19,10 +19,10 @@ async function get(url) {
 }
 
 function parseRows(html) {
-  const markdown = String(html).split(/\\r?\\n/).map(line => line.trim()).filter(line => line.startsWith('|') && line.endsWith('|')).map(line => line.slice(1, -1).split('|').map(clean)).filter(row => row.length && !row.every(cell => /^[-: ]+$/.test(cell)));
+  const markdown = String(html).split(/\r?\n/).map(line => line.trim()).filter(line => line.startsWith('|') && line.endsWith('|')).map(line => line.slice(1, -1).split('|').map(clean)).filter(row => row.length && !row.every(cell => /^[-: ]+$/.test(cell)));
   if (markdown.length) return markdown;
-  return [...html.matchAll(/<tr\\b[^>]*>([\\s\\S]*?)<\\/tr>/gi)]
-    .map(match => [...match[1].matchAll(/<(?:td|th)\\b[^>]*>([\\s\\S]*?)<\\/(?:td|th)>/gi)].map(x => clean(x[1])))
+  return [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)]
+    .map(match => [...match[1].matchAll(/<(?:td|th)\b[^>]*>([\s\S]*?)<\/(?:td|th)>/gi)].map(x => clean(x[1])))
     .filter(row => row.length);
 }
 
