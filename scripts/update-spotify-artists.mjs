@@ -55,15 +55,19 @@ function parseArtistAlbums(html) {
 
 function parseSummary(html, artistName) {
   const rows = parseRows(html);
-  const row = rows.find(r => r.some(x => x.toLowerCase() === artistName.toLowerCase()));
-  if (!row) return {};
-  const values = row.map(number);
-  const listenersIndex = row.findIndex(x => number(x) != null);
-  if (listenersIndex < 0) return {};
+  const headerIndex = rows.findIndex(r => r.some(x => /^listeners$/i.test(x)) && r.some(x => /daily/i.test(x)));
+  if (headerIndex < 0) return {};
+  const header = rows[headerIndex].map(x => x.toLowerCase());
+  const artistIndex = header.findIndex(x => /artist/.test(x));
+  const listenersIndex = header.findIndex(x => /^listeners$/.test(x));
+  const dailyIndex = header.findIndex(x => /daily/.test(x));
+  const peakIndex = header.findIndex(x => /^peak$/i.test(x));
+  const row = rows.slice(headerIndex + 1).find(r => r[artistIndex] && r[artistIndex].toLowerCase() === artistName.toLowerCase());
+  if (!row || listenersIndex < 0) return {};
   return {
-    monthlyListeners: values[listenersIndex],
-    monthlyListenersDailyChange: values[listenersIndex + 1] ?? null,
-    monthlyListenersPeak: values[listenersIndex + 3] ?? null
+    monthlyListeners: number(row[listenersIndex]),
+    monthlyListenersDailyChange: dailyIndex >= 0 ? number(row[dailyIndex]) : null,
+    monthlyListenersPeak: peakIndex >= 0 ? number(row[peakIndex]) : null
   };
 }
 
