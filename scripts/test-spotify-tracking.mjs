@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source=await readFile(new URL('../spotify-tracking.js',import.meta.url),'utf8');
-function el(id=''){const x={id,value:'',textContent:'',className:'',prepend(){},appendChild(){},setAttribute(){},addEventListener(){},querySelector(){return null},querySelectorAll(){return[]}};let html='';Object.defineProperty(x,'innerHTML',{get(){return html},set(v){html=String(v)}});return x}
+function el(id=''){const x={id,value:'',textContent:'',className:'',prepend(){},appendChild(){},setAttribute(){},addEventListener(){},querySelector(){return null},querySelectorAll(){return[]}};let html='';Object.defineProperty(x,'innerHTML',{configurable:true,get(){return html},set(v){html=String(v)}});return x}
 const results=el('results'),wrap=el('results-wrap'),profile=el('profile'),name=el('profile-name');name.textContent='Lady Gaga';
 profile.querySelector=s=>s==='.profile-name'?name:null;profile.after=n=>{panel=n;map['#spotifyArtistPanel']=n};
 results.querySelector=s=>s==='.profile'?profile:s==='#spotifyArtistPanel'?panel:null;
