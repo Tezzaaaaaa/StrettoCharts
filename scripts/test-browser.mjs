@@ -51,12 +51,25 @@ try {
 
   await page.locator('#backSearch').click({ timeout: 5000 });
   await page.locator('.candidate').first().waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('#search').fill('Lady Gaga');
+  await page.locator('.candidate').first().waitFor({ state: 'visible', timeout: 5000 });
+  const gagaCandidates = await page.locator('.candidate').count();
+  if (gagaCandidates < 1) throw new Error('Lady Gaga search produced no candidate result');
+  await page.locator('.candidate').filter({ hasText: 'Lady Gaga' }).first().click({ timeout: 5000 });
+  await page.locator('#results .profile').waitFor({ state: 'visible', timeout: 5000 });
+  await page.locator('#spotifyArtistPanel').waitFor({ state: 'visible', timeout: 5000 });
+  const spotifyPanel = await page.locator('#spotifyArtistPanel').innerText();
+  if (!spotifyPanel.includes('Spotify chart history')) throw new Error('Lady Gaga Spotify chart history is missing');
+  if (!spotifyPanel.includes('Full Spotify song catalogue')) throw new Error('Lady Gaga full Spotify song catalogue is missing');
+  if (!spotifyPanel.includes('Full Spotify album / release catalogue')) throw new Error('Lady Gaga full Spotify album catalogue is missing');
+
+
 
   observerCreations = await page.evaluate(() => window.__strettoMutationObserverCreations);
   if (observerCreations !== 0) throw new Error(`unexpected MutationObserver construction count: ${observerCreations}`);
 
   if (errors.length) throw new Error(errors.join(' | '));
-  console.log(JSON.stringify({ url, candidateCount, observerCreations, heartbeat }));
+  console.log(JSON.stringify({ url, candidateCount, gagaCandidates, spotifyPanelLength: spotifyPanel.length, observerCreations, heartbeat }));
 } finally {
   await browser.close();
 }
