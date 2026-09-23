@@ -7,7 +7,7 @@ const results=el('results'),wrap=el('results-wrap'),profile=el('profile'),name=e
 profile.querySelector=s=>s==='.profile-name'?name:null;profile.after=n=>{panel=n;map['#spotifyArtistPanel']=n};
 results.querySelector=s=>s==='.profile'?profile:s==='#spotifyArtistPanel'?panel:null;
 let panel=null;
-const map={'#results':results,'.results-wrap':wrap,'#search':el('search'),'#searchForm':el('searchForm')};
+const map={'#results':results,'.results-wrap':wrap,'.profile':profile,'#search':el('search'),'#searchForm':el('searchForm')};
 const document={head:el('head'),createElement:()=>{const x=el();const old=x.innerHTML;Object.defineProperty(x,'innerHTML',{get(){return x._html||''},set(v){x._html=String(v)}});return x},querySelector:s=>map[s]||null,querySelectorAll:()=>[]};
 const context={console,document,window:{},fetch:async url=>{
  if(url==='data/spotify-artists.json')return{ok:true,json:async()=>({generatedAt:'2026-09-23',artists:[{name:'Lady Gaga',monthlyListeners:100000000,dailyStreams:1000000,totalStreams:1000000000,tracks:377,monthlyListenersPeak:120000000,monthlyListenersDailyChange:1000,topSongs:[],topAlbums:[]}]})};
