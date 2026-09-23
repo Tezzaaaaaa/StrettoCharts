@@ -31,7 +31,7 @@ function parseArtistSongs(html) {
   const out = [];
   for (const row of rows.slice(header + 1)) {
     if (row.length < 3) continue;
-    const title = row[0].replace(/^[*^]\\s+/, '');
+    const title = row[0].replace(/^[*^]\s+/, '');
     const streams = number(row[1]);
     const dailyStreams = number(row[2]);
     if (!title || streams == null) continue;
@@ -45,7 +45,7 @@ function parseArtistAlbums(html) {
   const out = [];
   for (const row of rows) {
     if (row.length < 3) continue;
-    const title = row[0].replace(/^[*^]\\s+/, '');
+    const title = row[0].replace(/^[*^]\s+/, '');
     const streams = number(row[1]);
     const dailyStreams = number(row[2]);
     if (!title || streams == null || dailyStreams == null) continue;
@@ -80,8 +80,8 @@ function parseChartHistory(html) {
   const markets = rows[headerIndex].slice(3);
   const history = [];
   for (const row of rows.slice(headerIndex + 1)) {
-    if (row.length < 3 || !/^\\d{4}\\/\\d{2}\\/\\d{2}$/.test(row[0])) continue;
-    const title = row[1].replace(/^[*^]\\s+/, '');
+    if (row.length < 3 || !/^\d{4}\/\d{2}\/\d{2}$/.test(row[0])) continue;
+    const title = row[1].replace(/^[*^]\s+/, '');
     const streams = number(row[2]);
     if (!title || streams == null) continue;
     const peaks = {};
