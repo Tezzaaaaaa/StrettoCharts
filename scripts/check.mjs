@@ -25,7 +25,7 @@ const validateSources = (sources, label) => {
       if (entry.peakRank != null && (!Number.isInteger(entry.peakRank) || entry.peakRank < 1)) fail(`${source.id}: invalid peakRank at rank ${entry.rank}`);
       if (entry.movement != null && (!Number.isInteger(entry.movement) || !Number.isFinite(entry.movement))) fail(`${source.id}: invalid movement at rank ${entry.rank}`);
       if (entry.movementLabel != null && !['new', 'up', 'down', 'same'].some(label => String(entry.movementLabel).startsWith(label))) fail(`${source.id}: invalid movementLabel at rank ${entry.rank}`);
-      if (entry.weeksOnChart != null && (!Number.isInteger(entry.weeksOnChart) || !Number.isFinite(entry.weeksOnChart) || entry.weeksOnChart < 1)) fail(`${source.id}: invalid weeksOnChart at rank ${entry.rank}`);
+      if (entry.weeksOnChart != null && (!Number.isInteger(entry.weeksOnChart) || entry.weeksOnChart < 1)) fail(`${source.id}: invalid weeksOnChart at rank ${entry.rank}`);
     }
   }
 };
@@ -38,7 +38,7 @@ validateSources(latest.sources, 'data/latest.json');
 
 if (!Array.isArray(latest.artistRankings)) fail('data/latest.json: artistRankings is not an array');
 for (const artist of latest.artistRankings) {
-  if (!artist?.artist || !Number.isInteger(artist.rank) || !Number.isFinite(artist.rank) || artist.rank < 1) fail('data/latest.json: invalid artist ranking');
+  if (!artist?.artist || !Number.isInteger(artist.rank) || artist.rank < 1) fail('data/latest.json: invalid artist ranking');
 }
 
 const historyIndex = await readJson('./data/history/index.json');
