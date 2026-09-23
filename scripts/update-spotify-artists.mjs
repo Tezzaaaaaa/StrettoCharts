@@ -6,21 +6,23 @@ const followingPath = new URL('./data/following.json', root);
 const outputPath = new URL('./data/spotify-artists.json', root);
 const headers = { 'user-agent': 'Mozilla/5.0 StrettoCharts/1.0', 'accept': 'text/html,text/plain,*/*' };
 
-const clean = value => String(value ?? '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+const clean = value => String(value ?? '').replace(/<[^>]+>/g, ' ').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/`/g, '').replace(/\s+/g, ' ').trim();
 const number = value => {
   const n = Number(String(value ?? '').replace(/,/g, ''));
   return Number.isFinite(n) ? n : null;
 };
 
 async function get(url) {
-  const response = await fetch(url, { headers });
-  if (!response.ok) throw new Error(`HTTP ${response.status} from ${url}`);
+  const response = await fetch(`https://r.jina.ai/${url}`, { headers: { ...headers, accept: 'text/plain' } });
+  if (!response.ok) throw new Error(`HTTP ${response.status} from Reader for ${url}`);
   return response.text();
 }
 
 function parseRows(html) {
-  return [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)]
-    .map(match => [...match[1].matchAll(/<(?:td|th)\b[^>]*>([\s\S]*?)<\/(?:td|th)>/gi)].map(x => clean(x[1])))
+  const markdown = String(html).split(/\\r?\\n/).map(line => line.trim()).filter(line => line.startsWith('|') && line.endsWith('|')).map(line => line.slice(1, -1).split('|').map(clean)).filter(row => row.length && !row.every(cell => /^[-: ]+$/.test(cell)));
+  if (markdown.length) return markdown;
+  return [...html.matchAll(/<tr\\b[^>]*>([\\s\\S]*?)<\\/tr>/gi)]
+    .map(match => [...match[1].matchAll(/<(?:td|th)\\b[^>]*>([\\s\\S]*?)<\\/(?:td|th)>/gi)].map(x => clean(x[1])))
     .filter(row => row.length);
 }
 
