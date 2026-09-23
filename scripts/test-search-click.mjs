@@ -17,7 +17,7 @@ function el(id=''){
   x.after=n=>{profilePanel=n;notify(x)};return x;
 }
 function notify(target){for(const o of observers)if(o.target===target||o.subtree)o.cb()}
-const results=el('results'),wrap=el('results-wrap'),profile=el('profile');profileName=el('profile-name');profileName.textContent='Lady Gaga';
+const results=el('results'),wrap=el('results-wrap'),profile=el('profile');profileName=el('profile-name');profileName.textContent='Lady Gaga';profile.after=n=>{profilePanel=n;notify(profile)};
 const back=el('backSearch');profile.querySelector=s=>s==='.profile-name'?profileName:s==='#backSearch'?back:null;
 const map={'#searchForm':el('searchForm'),'#search':el('search'),'#results':results,'#title':el('title'),'#sub':el('sub'),'#count':el('count'),'#updated':el('updated'),'.results-wrap':wrap};
 const document={head:el('head'),createElement:()=>el(),querySelector:s=>map[s]||null,querySelectorAll:()=>[]};
