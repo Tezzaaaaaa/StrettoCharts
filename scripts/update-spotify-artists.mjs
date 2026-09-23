@@ -36,7 +36,7 @@ function parseArtistSongs(html) {
     if (!row[0] || streams == null) continue;
     out.push({ title: row[0], streams, dailyStreams: dailyStreams ?? 0 });
   }
-  return out.slice(0, 20);
+  return out;
 }
 
 function parseArtistAlbums(html) {
@@ -50,7 +50,7 @@ function parseArtistAlbums(html) {
     if (/album title/i.test(row[0]) || /^streams$/i.test(row[0])) continue;
     out.push({ title: row[0], streams, dailyStreams });
   }
-  return out.slice(0, 20);
+  return out;
 }
 
 function parseSummary(html, artistName) {
@@ -71,36 +71,73 @@ function parseSummary(html, artistName) {
   };
 }
 
+function parseChartHistory(html) {
+  const rows = parseRows(html);
+  const headerIndex = rows.findIndex(row => /^peak date$/i.test(row[0] || '') && /^title$/i.test(row[1] || '') && /^streams$/i.test(row[2] || ''));
+  if (headerIndex < 0) throw new Error('Spotify chart-history table not found');
+  const markets = rows[headerIndex].slice(3);
+  const history = [];
+  for (const row of rows.slice(headerIndex + 1)) {
+    if (row.length < 3 || !/^\\d{4}\\/\\d{2}\\/\\d{2}$/.test(row[0])) continue;
+    const title = row[1].replace(/^[*^]\\s+/, '');
+    const streams = number(row[2]);
+    if (!title || streams == null) continue;
+    const peaks = {};
+    markets.forEach((market, i) => {
+      const value = row[i + 3];
+      if (value && value !== '--') {
+        const rank = number(value);
+        if (rank != null) peaks[market] = rank;
+      }
+    });
+    history.push({ peakDate: row[0], title, streams, peaks });
+  }
+  return { markets, rows: history };
+}
+
 function parseSongSummary(html) {
-  const text = html.replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, '\n')
-    .split(/\n+/).map(clean).filter(Boolean);
-  const find = label => {
-    const index = text.findIndex(x => x.toLowerCase() === label.toLowerCase());
-    return index >= 0 ? number(text[index + 1]) : null;
-  };
+  const rows = parseRows(html);
+  const headerIndex = rows.findIndex(row => row.some(x => /^streams$/i.test(x)) && row.some(x => /^daily$/i.test(x)) && row.some(x => /^tracks$/i.test(x)));
+  if (headerIndex < 0) return {};
+  const header = rows[headerIndex].map(x => x.toLowerCase());
+  const totalIndex = header.indexOf('total');
+  const leadIndex = header.indexOf('as lead');
+  const soloIndex = header.indexOf('solo');
+  const featureIndex = header.indexOf('as feature (*)');
+  const row = rows[headerIndex + 1];
+  const dailyRow = rows[headerIndex + 2];
+  const tracksRow = rows[headerIndex + 3];
   return {
-    totalStreams: find('Streams'),
-    dailyStreams: find('Daily'),
-    tracks: find('Tracks')
+    totalStreams: row && totalIndex >= 0 ? number(row[totalIndex]) : null,
+    dailyStreams: dailyRow && totalIndex >= 0 ? number(dailyRow[totalIndex]) : null,
+    tracks: tracksRow && totalIndex >= 0 ? number(tracksRow[totalIndex]) : null,
+    leadStreams: row && leadIndex >= 0 ? number(row[leadIndex]) : null,
+    soloStreams: row && soloIndex >= 0 ? number(row[soloIndex]) : null,
+    featureStreams: row && featureIndex >= 0 ? number(row[featureIndex]) : null,
+    leadTracks: tracksRow && leadIndex >= 0 ? number(tracksRow[leadIndex]) : null,
+    soloTracks: tracksRow && soloIndex >= 0 ? number(tracksRow[soloIndex]) : null,
+    featureTracks: tracksRow && featureIndex >= 0 ? number(tracksRow[featureIndex]) : null
   };
 }
 
 async function fetchArtist(artist) {
   const id = artist.spotifyArtistId;
   const base = `https://kworb.net/spotify/artist/${id}`;
-  const [songsHtml, albumsHtml, listenersHtml] = await Promise.all([
+  const [songsHtml, albumsHtml, chartHtml, listenersHtml] = await Promise.all([
     get(`${base}_songs.html`),
     get(`${base}_albums.html`),
+    get(`${base}.html`),
     get('https://www.kworb.net/spotify/listeners.html')
   ]);
   return {
     ...artist,
     ...parseSongSummary(songsHtml),
     ...parseSummary(listenersHtml, artist.name),
-    topSongs: parseArtistSongs(songsHtml),
-    topAlbums: parseArtistAlbums(albumsHtml)
+    songs: parseArtistSongs(songsHtml),
+    albums: parseArtistAlbums(albumsHtml),
+    topSongs: parseArtistSongs(songsHtml).slice(0, 10),
+    topAlbums: parseArtistAlbums(albumsHtml).slice(0, 10),
+    chartHistory: parseChartHistory(chartHtml)
   };
 }
 
@@ -121,7 +158,7 @@ async function main() {
     }
   }
   const payload = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     source: 'Kworb Spotify statistics (third-party public tracker)',
     artists: results
