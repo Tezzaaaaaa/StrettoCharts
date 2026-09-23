@@ -30,7 +30,6 @@ const elements = {
   '#sub': element('sub'),
   '#count': element('count'),
   '#updated': element('updated'),
-  '#searchStatus': element('searchStatus')
 };
 
 const document = {
@@ -40,6 +39,7 @@ const document = {
   querySelectorAll() { return []; }
 };
 
+let historyFetches = 0;
 let releaseFirst;
 const firstPending = new Promise(resolve => { releaseFirst = resolve; });
 
@@ -54,10 +54,12 @@ globalThis.fetch = async url => {
   }
 
   if (url === 'data/history/index.json') {
+    historyFetches++;
     return { ok: true, async json() { return ['2026-09-22']; } };
   }
   if (url === 'data/history/2026-09-22.json') {
-    return { ok: true, async json() { return { schemaVersion: 3, generatedAt: '2026-09-22T00:00:00.000Z', sources: [] }; } };
+    historyFetches++;
+    return { ok: true, async json() { return { schemaVersion: 3, generatedAt: '2026-09-22T00:00:00.000Z', sources: [{ id: 'test-source', name: 'Test Source', status: 'ok', entries: [] }] }; } };
   }
   if (typeof url === 'string' && !url.startsWith('https://itunes.apple.com/')) throw new Error(`Unexpected fetch URL: ${url}`);
   const query = new URL(url).searchParams.get('term');
@@ -97,6 +99,10 @@ input.value = 'second';
 form.dispatchEvent({ type: 'submit', preventDefault() {} });
 
 await new Promise(resolve => setTimeout(resolve, 0));
+
+if (historyFetches < 1) {
+  throw new Error('lazy history path was not traversed');
+}
 
 if (!elements['#results'].innerHTML.includes('Second Album')) {
   throw new Error('newer search did not render');
