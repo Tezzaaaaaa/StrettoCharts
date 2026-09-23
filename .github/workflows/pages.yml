@@ -7,6 +7,8 @@ on:
       - 'index.html'
       - 'dashboard.html'
       - 'search-enhancements.js'
+      - 'spotify-tracking.js'
+      - 'scripts/test-browser.mjs'
       - 'artwork-provider.js'
       - 'scripts/check.mjs'
       - 'package.json'
@@ -36,6 +38,8 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
       - name: Validate site
         run: npm run check
       - name: Setup Pages
@@ -47,3 +51,7 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v5
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser smoke test
+        run: node scripts/test-browser.mjs "${{ steps.deployment.outputs.page_url }}"
