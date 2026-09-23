@@ -31,10 +31,11 @@ function parseArtistSongs(html) {
   const out = [];
   for (const row of rows.slice(header + 1)) {
     if (row.length < 3) continue;
+    const title = row[0].replace(/^[*^]\\s+/, '');
     const streams = number(row[1]);
     const dailyStreams = number(row[2]);
-    if (!row[0] || streams == null) continue;
-    out.push({ title: row[0], streams, dailyStreams: dailyStreams ?? 0 });
+    if (!title || streams == null) continue;
+    out.push({ title, streams, dailyStreams: dailyStreams ?? 0 });
   }
   return out;
 }
@@ -44,11 +45,12 @@ function parseArtistAlbums(html) {
   const out = [];
   for (const row of rows) {
     if (row.length < 3) continue;
+    const title = row[0].replace(/^[*^]\\s+/, '');
     const streams = number(row[1]);
     const dailyStreams = number(row[2]);
-    if (!row[0] || streams == null || dailyStreams == null) continue;
-    if (/album title/i.test(row[0]) || /^streams$/i.test(row[0])) continue;
-    out.push({ title: row[0], streams, dailyStreams });
+    if (!title || streams == null || dailyStreams == null) continue;
+    if (/album title/i.test(title) || /^streams$/i.test(title)) continue;
+    out.push({ title, streams, dailyStreams });
   }
   return out;
 }
