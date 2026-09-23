@@ -62,7 +62,7 @@ try {
       const response = await fetch('spotify-tracking.js', { cache: 'no-store' });
       return { status: response.status, ok: response.ok, contentType: response.headers.get('content-type'), length: (await response.text()).length };
     });
-    console.log(JSON.stringify({ spotifyRefreshType: await page.evaluate(() => typeof window.strettoSpotifyRefresh), spotifyScriptProbe, scriptSources: await page.locator('script').evaluateAll(xs => xs.map(x => x.src)), pageErrors: errors }));
+    console.log(JSON.stringify({ spotifyRefreshType: await page.evaluate(() => typeof window.strettoSpotifyRefresh), spotifyLoaded: await page.evaluate(() => window.__strettoSpotifyLoaded === true), spotifyScriptProbe, scriptSources: await page.locator('script').evaluateAll(xs => xs.map(x => x.src)), pageErrors: errors }));
   }
   await page.locator('#spotifyArtistPanel').waitFor({ state: 'visible', timeout: 5000 });
   const spotifyPanel = await page.locator('#spotifyArtistPanel').innerText();
