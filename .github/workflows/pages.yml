@@ -44,6 +44,8 @@ jobs:
         run: node scripts/update-spotify-artists.mjs
       - name: Validate site
         run: npm run check
+      - name: Parse JavaScript
+        run: node --check search-enhancements.js && node --check spotify-tracking.js && node --check scripts/update-spotify-artists.mjs
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Upload site
