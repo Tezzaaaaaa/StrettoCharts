@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-22",
+  "source": "Kworb Spotify statistics (third-party public tracker)",
+  "artists": [
+    {
+      "name": "Lady Gaga",
+      "spotifyArtistId": "1HY2Jd0NmPuamShAr6KMms",
+      "monthlyListeners": 100009076,
+      "monthlyListenersDailyChange": 115959,
+      "monthlyListenersPeak": 124637761,
+      "totalStreams": 38553758307,
+      "dailyStreams": 15334777,
+      "leadStreams": 37973728094,
+      "soloStreams": 24207042153,
+      "featureStreams": 580030213,
+      "tracks": 377,
+      "leadTracks": 338,
+      "soloTracks": 158,
+      "featureTracks": 39,
+      "topSongs": [
+        {"title":"Die With A Smile","streams":4002156513,"dailyStreams":2513107},
+        {"title":"Shallow - Radio Edit","streams":3175512486,"dailyStreams":649725},
+        {"title":"Poker Face","streams":2312877716,"dailyStreams":1137642},
+        {"title":"Bad Romance","streams":2007396244,"dailyStreams":917434},
+        {"title":"Always Remember Us This Way","streams":1985533234,"dailyStreams":648263},
+        {"title":"Just Dance","streams":1903612684,"dailyStreams":1019637},
+        {"title":"Rain On Me (with Ariana Grande)","streams":1275986817,"dailyStreams":206867},
+        {"title":"Judas","streams":1263617817,"dailyStreams":925094},
+        {"title":"Telephone","streams":1208213161,"dailyStreams":654728},
+        {"title":"Paparazzi","streams":1165453161,"dailyStreams":1173971}
+      ],
+      "topAlbums": [
+        {"title":"The Fame Monster","streams":4581991935,"dailyStreams":2374588},
+        {"title":"A Star Is Born Soundtrack (Without Dialogue)","streams":6925967922,"dailyStreams":1673478},
+        {"title":"The Fame","streams":6760481698,"dailyStreams":4252319},
+        {"title":"MAYHEM","streams":6488832909,"dailyStreams":4103872},
+        {"title":"Born This Way","streams":4585309363,"dailyStreams":2255646},
+        {"title":"Chromatica","streams":3081653420,"dailyStreams":433074},
+        {"title":"Joanne","streams":1895885099,"dailyStreams":261930},
+        {"title":"ARTPOP","streams":1631360237,"dailyStreams":511836}
+      ]
+    }
+  ]
+}
