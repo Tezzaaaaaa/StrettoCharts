@@ -73,6 +73,7 @@ function renderArtistWatch(){
  }
  panel.innerHTML=html;
 }
+window.strettoSpotifyRefresh=function(){refreshProfileButton();renderArtistWatch();};
 async function init(){
  style();
  try{var r=await fetch('data/spotify-artists.json',{cache:'no-store'});if(r.ok)stats=await r.json();}catch(e){}
