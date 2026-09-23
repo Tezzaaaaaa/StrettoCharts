@@ -57,7 +57,13 @@ try {
   if (gagaCandidates < 1) throw new Error('Lady Gaga search produced no candidate result');
   await page.locator('.candidate').filter({ hasText: 'Lady Gaga' }).first().click({ timeout: 5000 });
   await page.locator('#results .profile').waitFor({ state: 'visible', timeout: 5000 });
-  if (!(await page.locator('#spotifyArtistPanel').count())) { console.log(JSON.stringify({ spotifyRefreshType: await page.evaluate(() => typeof window.strettoSpotifyRefresh), scriptSources: await page.locator('script').evaluateAll(xs => xs.map(x => x.src)), pageErrors: errors })); }
+  if (!(await page.locator('#spotifyArtistPanel').count())) {
+    const spotifyScriptProbe = await page.evaluate(async () => {
+      const response = await fetch('spotify-tracking.js', { cache: 'no-store' });
+      return { status: response.status, ok: response.ok, contentType: response.headers.get('content-type'), length: (await response.text()).length };
+    });
+    console.log(JSON.stringify({ spotifyRefreshType: await page.evaluate(() => typeof window.strettoSpotifyRefresh), spotifyScriptProbe, scriptSources: await page.locator('script').evaluateAll(xs => xs.map(x => x.src)), pageErrors: errors }));
+  }
   await page.locator('#spotifyArtistPanel').waitFor({ state: 'visible', timeout: 5000 });
   const spotifyPanel = await page.locator('#spotifyArtistPanel').innerText();
   if (!spotifyPanel.includes('Spotify chart history')) throw new Error('Lady Gaga Spotify chart history is missing');
