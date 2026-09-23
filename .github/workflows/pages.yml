@@ -40,6 +40,8 @@ jobs:
           node-version: 22
       - name: Install test dependencies
         run: npm install --no-audit --no-fund
+      - name: Refresh Spotify data
+        run: node scripts/update-spotify-artists.mjs
       - name: Validate site
         run: npm run check
       - name: Setup Pages
