@@ -21,7 +21,7 @@ const results=el('results'),wrap=el('results-wrap'),profile=el('profile');profil
 const back=el('backSearch');profile.querySelector=s=>s==='.profile-name'?profileName:s==='#backSearch'?back:null;
 const map={'#searchForm':el('searchForm'),'#search':el('search'),'#results':results,'#title':el('title'),'#sub':el('sub'),'#count':el('count'),'#updated':el('updated'),'.results-wrap':wrap};
 const document={head:el('head'),createElement:()=>el(),querySelector:s=>map[s]||null,querySelectorAll:()=>[]};
-const context={console,document,location:{href:'https://strettocharts.test/'},URL,setTimeout,clearTimeout,
+const context={console,document,window:{},location:{href:'https://strettocharts.test/'},URL,setTimeout,clearTimeout,
   MutationObserver:class{constructor(cb){this.cb=cb}observe(target,o){this.target=target;this.subtree=Boolean(o?.subtree);observers.push(this)}},
   fetch:async url=>{
     if(url==='data/latest.json')return{ok:true,json:async()=>({schemaVersion:3,generatedAt:'2026-09-23T00:00:00.000Z',sources:[{id:'test',name:'Test Chart',status:'ok',entries:[{rank:1,previousRank:1,peakRank:1,weeksOnChart:2,title:'Die With A Smile',artists:['Lady Gaga']}]}]})};
