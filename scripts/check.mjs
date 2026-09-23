@@ -33,6 +33,7 @@ const validateSources = (sources, label) => {
 const latest = await readJson('./data/latest.json');
 if (latest?.schemaVersion !== 3) fail('data/latest.json: unsupported schemaVersion');
 if (!latest?.generatedAt) fail('data/latest.json: missing generatedAt');
+if (!/^\\d{4}-\\d{2}-\\d{2}T/.test(latest.generatedAt) || Number.isNaN(Date.parse(latest.generatedAt))) fail('data/latest.json: generatedAt is not a valid ISO date');
 validateSources(latest.sources, 'data/latest.json');
 
 if (!Array.isArray(latest.artistRankings)) fail('data/latest.json: artistRankings is not an array');
