@@ -21,6 +21,8 @@ const validateSources = (sources, label) => {
       if (ranks.has(entry.rank)) fail(`${source.id}: duplicate rank ${entry.rank}`);
       ranks.add(entry.rank);
       if (!entry.title || !Array.isArray(entry.artists) || entry.artists.length === 0) fail(`${source.id}: incomplete chart entry at rank ${entry.rank}`);
+      if (/^(peak|last week|weeks in|position|rank|title|artist)$/i.test(entry.title)) fail(`${source.id}: header text leaked into title at rank ${entry.rank}: "${entry.title}"`);
+      if (entry.artists.every(a => /^\d+$/.test(String(a)))) fail(`${source.id}: numeric-only artists at rank ${entry.rank}`);
       if (entry.previousRank != null && (!Number.isInteger(entry.previousRank) || entry.previousRank < 1)) fail(`${source.id}: invalid previousRank at rank ${entry.rank}`);
       if (entry.peakRank != null && (!Number.isInteger(entry.peakRank) || entry.peakRank < 1)) fail(`${source.id}: invalid peakRank at rank ${entry.rank}`);
       if (entry.weeksOnChart != null && (!Number.isInteger(entry.weeksOnChart) || entry.weeksOnChart < 1)) fail(`${source.id}: invalid weeksOnChart at rank ${entry.rank}`);
