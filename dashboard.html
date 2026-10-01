@@ -16,17 +16,88 @@
 html[data-theme="dark"]{color-scheme:dark;color:#f4f4f8;background:#101014;--muted:#a9a9b3;--line:#34343d;--panel:#1a1a21;--soft:#23232c}html[data-theme="dark"] body{background:#101014}html[data-theme="dark"] .theme-toggle{background:#fff;color:#17171c;border-color:#ffffff20}html[data-theme="dark"] .results-head h2{color:#f4f4f8}html[data-theme="dark"] .empty,html[data-theme="dark"] .chart-summary,html[data-theme="dark"] .album-info,html[data-theme="dark"] .search-results-panel{box-shadow:0 8px 28px #0005}html[data-theme="dark"] .move{background:#30303a;color:#e5e5ed}html[data-theme="dark"] .album-meta span,html[data-theme="dark"] .chart-status{background:#292442;color:#d6d0ff;border-color:#49406f}html[data-theme="dark"] .footer{color:#777782}
 @media(max-width:700px){.wrap{padding:10px}.hero{min-height:430px;padding:31px 21px;border-radius:23px}.theme-toggle{top:11px;right:11px}.searchbar{grid-template-columns:1fr}.confirm{width:100%}.results-head{display:block}.profile{padding:16px}.profile-top{grid-template-columns:62px 1fr}.profile-art{width:62px;height:62px;border-radius:13px}.profile-name{font-size:22px}.profile-actions{grid-column:1/-1;width:max-content}.profile-stats{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr 1fr}.chart{grid-template-columns:1fr 38px 68px}.chart-meta{grid-column:1/-1;text-align:left;padding-top:2px;border-top:1px solid var(--line)}.song-head{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Crate × Kefe visual system */
+:root{
+  font-family:'Inter',system-ui,sans-serif;
+  color:#3A342D;background:#F1ECE5;
+  --bg:#F1ECE5;--card-raised:#EDE7DE;--card-base:#B8A99A;
+  --sage:#A4B59B;--sage-hover:#96A88C;--sage-pressed:#8B9D82;
+  --text:#3A342D;--text-dim:#6B635A;--text-soft:#9A9186;
+  --neo-d:rgba(168,152,132,.50);--neo-l:rgba(255,255,255,.92);
+  --out-lg:12px 12px 28px var(--neo-d),-12px -12px 28px var(--neo-l);
+  --out-md:7px 7px 16px var(--neo-d),-7px -7px 16px var(--neo-l);
+  --out-sm:4px 4px 9px var(--neo-d),-4px -4px 9px var(--neo-l);
+  --in-md:inset 5px 5px 11px var(--neo-d),inset -5px -5px 11px var(--neo-l);
+  --in-sm:inset 3px 3px 7px var(--neo-d),inset -3px -3px 7px var(--neo-l);
+  --in-sage:inset 2px 2px 5px rgba(70,90,60,.45),inset -2px -2px 5px rgba(255,255,255,.28);
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:20px;
+}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1320px;padding:18px 18px 44px}
+.theme-toggle{width:40px;height:40px;border:0;border-radius:50%;background:var(--bg);color:var(--text-dim);box-shadow:var(--out-sm);backdrop-filter:none}
+.hero{min-height:0;padding:30px;border-radius:var(--r-xl);background:var(--bg);color:var(--text);box-shadow:var(--out-lg);overflow:hidden}
+.hero:after{display:none}
+.eyebrow{color:var(--text-soft);font-size:10px;letter-spacing:2px}
+.brand{font-size:clamp(42px,7vw,76px);color:var(--text);letter-spacing:-.065em}
+.hero h1{color:var(--text);font-size:clamp(24px,4vw,38px)}
+.hero p{color:var(--text-dim);font-size:14px}
+.searchbar{max-width:none;margin-top:22px;grid-template-columns:1fr auto}
+.search{height:54px;border:0;border-radius:999px;background:var(--bg);color:var(--text);padding:0 20px 0 40px;font-size:13px;box-shadow:var(--in-md);backdrop-filter:none}
+.search:focus{border:0;box-shadow:var(--in-md),0 0 0 3px rgba(164,181,155,.25)}
+.search::placeholder{color:var(--text-soft)}
+.confirm{height:54px;border:0;border-radius:999px;background:var(--sage);color:#fff;padding:0 22px;font-size:11px;letter-spacing:1px;text-transform:uppercase;box-shadow:var(--out-sm)}
+.confirm:hover{background:var(--sage-hover);box-shadow:var(--out-md)}
+.confirm:active{background:var(--sage-pressed);box-shadow:var(--in-sage)}
+.updated{color:var(--text-soft)}
+.results-wrap{margin-top:22px}
+.results-head h2{color:var(--text);font-size:20px}
+.results-head p,.count{color:var(--text-soft)}
+.results{gap:14px}
+.empty,.profile,.chart-summary,.album-info,.search-results-panel{background:var(--bg);border:0;border-radius:var(--r-lg);box-shadow:var(--in-md)}
+.empty{color:var(--text-soft)}
+.profile{color:var(--text);box-shadow:var(--out-md);background:var(--bg)}
+.profile-top{grid-template-columns:104px 1fr auto}
+.profile-art{border-radius:var(--r-lg);box-shadow:var(--out-sm);background:var(--card-base)}
+.profile-kind,.profile-actions{background:var(--bg);color:var(--text-dim);border:0;box-shadow:var(--out-sm)}
+.profile-name{color:var(--text)}
+.profile-summary{color:var(--text-dim)}
+.profile-stat{background:var(--bg);border:0;box-shadow:var(--in-sm)}
+.profile-stat strong{color:var(--text)}
+.profile-stat span{color:var(--text-soft)}
+.chart-summary{padding:18px}
+.chart-summary h3,.album-info h3{color:var(--text)}
+.chart{background:var(--bg);border:0;border-radius:var(--r-md);box-shadow:var(--out-sm)}
+.move{background:var(--bg);color:var(--text-dim);box-shadow:var(--in-sm)}
+.chart-meta{color:var(--text-soft)}
+.song-group{background:var(--bg);border:0;box-shadow:var(--out-sm)}
+.song-head,.track-item{background:var(--bg);border:0}
+.track-item{box-shadow:var(--in-sm)}
+.album-meta span,.chart-status{background:var(--bg);color:var(--text-dim);border:0;box-shadow:var(--in-sm)}
+.footer{color:var(--text-soft)}
+.search-status{color:var(--text-soft)!important}
+#artistWatch,.artist-watch{background:var(--bg)!important;border:0!important;border-radius:var(--r-lg)!important;box-shadow:var(--in-md)!important}
+.watch-chip{background:var(--bg)!important;border:0!important;box-shadow:var(--out-sm)!important;color:var(--text)!important;border-radius:999px!important}
+html[data-theme="dark"]{color-scheme:light;color:var(--text);background:var(--bg)}
+html[data-theme="dark"] body{background:var(--bg)}
+html[data-theme="dark"] .theme-toggle{background:var(--bg);color:var(--text-dim)}
+html[data-theme="dark"] .hero{background:var(--bg);color:var(--text)}
+html[data-theme="dark"] .hero h1,html[data-theme="dark"] .brand,html[data-theme="dark"] .results-head h2,html[data-theme="dark"] .profile-name{color:var(--text)}
+html[data-theme="dark"] .hero p,html[data-theme="dark"] .results-head p,html[data-theme="dark"] .count,html[data-theme="dark"] .profile-summary{color:var(--text-dim)}
+html[data-theme="dark"] .search,html[data-theme="dark"] .empty,html[data-theme="dark"] .profile,html[data-theme="dark"] .chart-summary,html[data-theme="dark"] .album-info,html[data-theme="dark"] .search-results-panel,html[data-theme="dark"] .profile-stat,html[data-theme="dark"] .chart,html[data-theme="dark"] .song-group,html[data-theme="dark"] .track-item{background:var(--bg);color:var(--text);border-color:transparent}
+@media(max-width:700px){.wrap{padding:10px}.hero{padding:24px 18px;border-radius:var(--r-xl)}.searchbar{grid-template-columns:1fr}.confirm{width:100%}}
 </style>
 </head>
 <body>
-<button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">☾</button>
+<button id="themeToggle" class="theme-toggle" type="button" aria-label="Display control" aria-pressed="false">☾</button>
 <main class="wrap">
 <header class="hero">
   <div class="eyebrow">Search the charts</div>
   <div class="brand">StrettoCharts</div>
   <h1>Find an artist, song or album.</h1>
   <p>See current chart positions, movement, peaks, longevity and every tracked placement in one focused profile.</p>
-  <form id="searchForm" class="searchbar"><input id="search" class="search" type="search" autocomplete="off" placeholder="Search Taylor Swift, Lady Gaga, Drake, Espresso…" aria-label="Search artist, song or album"><button class="confirm" type="submit">Search</button></form>
+  <form id="searchForm" class="searchbar"><input id="search" class="search" type="search" autocomplete="off" placeholder="Search artists, albums or songs…" aria-label="Search artist, song or album"><button class="confirm" type="submit">Search</button></form>
   <div id="updated" class="updated">Search the chart database to begin.</div>
 </header>
 <section class="results-wrap" aria-live="polite">
